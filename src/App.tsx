@@ -1,7 +1,13 @@
-import Home from './pages/Home'
+import Header from './components/layout/Header'
+import AppRoutes from './routes/AppRoutes'
 
 function App() {
-  return <Home />
+  return (
+    <>
+      <Header />
+      <AppRoutes />
+    </>
+  )
 }
 
 export default App
