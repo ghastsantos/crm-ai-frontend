@@ -1,0 +1,35 @@
+---
+description: Camadas, imports e convenções React/Vite do CRM-AI Frontend
+globs: src/**/*.tsx,src/**/*.ts
+---
+
+# Arquitetura Frontend
+
+Textos de UI e mensagens ao usuário: **português brasileiro (pt-BR)** — ver `project-standards.mdc`.
+
+## Dependências entre camadas
+
+- `shared` não importa de `features`, `widgets`, `pages` ou `app`.
+- `entities` não importa de `features` ou `pages`.
+- `features` pode usar `shared`, `entities`; evitar importar outras `features` diretamente (extrair para `shared` ou `widgets` se necessário).
+- `widgets` pode usar `features`, `entities`, `shared`.
+- `pages` compõe `widgets`, `features`, `shared`.
+- `app` orquestra router e providers; importa `pages` e configuração global.
+
+## Path alias
+
+- Usar `@/` para imports desde `src/` (ver `vite.config.ts` e `tsconfig.app.json`).
+
+## API
+
+- Endpoints relativos à base `env.VITE_API_BASE_URL` (sem barra final na env; o client normaliza).
+- Erros: capturar `ApiError` do client quando fizer sentido mostrar mensagem ao usuário.
+
+## Estilo
+
+- Tailwind para layout e tema; `cn()` em `src/shared/lib/cn.ts` para classes condicionais.
+- Manter UI consistente com componentes em `src/shared/ui/`.
+
+## Testes (quando adicionados)
+
+- Colocar junto da feature ou em `src/**/*.test.tsx`; preferir Vitest + Testing Library (alinhado ao backend com Vitest).

@@ -1,73 +1,61 @@
-# React + TypeScript + Vite
+# CRM AI Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+SPA em React 19 + Vite 8 + TypeScript, integrada ao **crm-ai-backend** (auth JWT em `Authorization: Bearer`).
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React Router, TanStack Query, Zod, Tailwind CSS v4 (`@tailwindcss/vite`)
+- Fonte: Inter Variable (`@fontsource-variable/inter`)
+- UI monocromática (zinc), estilo minimalista / white-label
 
-## React Compiler
+## Início rápido
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+cp .env.example .env
+# Defina VITE_API_BASE_URL (ex.: http://localhost:3000)
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### CORS no backend
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+O backend exige `CORS_ORIGINS` com a origem do Vite (ex.: `http://localhost:5173`). Sem isso, o navegador bloqueia as requisições.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Scripts
+
+| Comando | Descrição |
+|--------|------------|
+| `npm run dev` | Desenvolvimento |
+| `npm run build` | Build de produção |
+| `npm run preview` | Preview do build |
+| `npm run lint` | ESLint |
+
+## Rotas
+
+| Rota | Descrição |
+|------|------------|
+| `/login` | Entrar |
+| `/register` | Cadastro (usuário + organização) |
+| `/` | Overview (requer sessão; dados de `GET /api/v1/auth/me`) |
+
+O token JWT fica em `sessionStorage` após login ou cadastro.
+
+## Estrutura (resumo)
+
 ```
+src/
+  app/           # Providers, router
+  entities/      # Tipos alinhados à API
+  features/auth/ # API auth, schemas Zod, formulários, sessão
+  pages/         # Composição das páginas
+  shared/        # Cliente HTTP, UI primitivos, utilitários
+  widgets/       # Header, shell autenticado
+```
+
+## Integração com a API
+
+- `POST /api/v1/auth/login` e `POST /api/v1/auth/register` — corpo alinhado ao backend; resposta `{ success, data: { token, user } }`.
+- `GET /api/v1/auth/me` — usuário e `memberships`.
+- Erros: `ApiError` com `code` (ex.: `EMAIL_ALREADY_IN_USE`, `INVALID_CREDENTIALS`).
+
+A seção **Pipeline** na home é placeholder até existirem endpoints de CRM (contacts/deals).

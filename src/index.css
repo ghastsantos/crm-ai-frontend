@@ -1,5 +1,12 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    @apply antialiased text-zinc-900 bg-white text-sm;
+  }
 }

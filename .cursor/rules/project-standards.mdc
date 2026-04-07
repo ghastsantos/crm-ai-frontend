@@ -1,0 +1,60 @@
+---
+description: Padrões gerais do CRM-AI Frontend (React, Vite, TypeScript)
+alwaysApply: true
+---
+
+# Padrões do Projeto CRM-AI Frontend
+
+## Idioma (pt-BR)
+
+- **Textos de interface, mensagens ao usuário, validação (Zod), erros mapeados e documentação voltada ao produto** devem estar em **português brasileiro (pt-BR)**.
+- Evitar vocabulário e construções típicas de **português de Portugal** (ex.: palavra-passe → senha; iniciar/terminar sessão → entrar/sair; a carregar → carregando; utilizador → usuário; registar/registo → cadastrar/cadastro; pedidos HTTP → requisições; contactos → contatos).
+- Código, nomes de variáveis e identificadores permanecem em **inglês**.
+- Respostas do assistente ao time: **português brasileiro**.
+
+## Uso de skills e regras
+
+- Em caso de conflito entre este arquivo e outras regras em `.cursor/rules/`, prevalecem as regras mais específicas da pasta `features/` ou `shared/` quando aplicável.
+
+- Sem emojis no código ou comentários.
+- Comentários só quando esclarecem decisão não óbvia; manter curtos.
+- Stack: TypeScript, React 19, Vite, TanStack Query, React Router, Tailwind CSS, Zod.
+
+## Estrutura (FSD-inspired)
+
+- `src/app/` — arranque, router, providers globais.
+- `src/pages/` — composição de telas; lógica mínima.
+- `src/features/<nome>/` — caso de uso (api, hooks, model, ui).
+- `src/widgets/` — blocos compostos reutilizáveis entre páginas.
+- `src/entities/` — tipos e modelos de domínio compartilhados.
+- `src/shared/` — ui primitiva, `api/client`, `config/env`, utilitários.
+
+## API e ambiente
+
+- Chamadas HTTP via `apiRequest` em `src/shared/api/client.ts` (formato alinhado ao backend: `{ success, data?, error? }`).
+- Variáveis públicas só com prefixo `VITE_`; validar em `src/shared/config/env.ts` com Zod (nunca confiar só em `import.meta.env` espalhado).
+- Não hardcodar URLs de API; usar `env` de `@/shared/config/env`.
+- Com `VITE_AUTH_HTTPONLY_COOKIE=true` (predefinido), usar `credentials: 'include'`, sessão assinalada com `markCookieBackedSession` após login/register, e `POST /api/v1/auth/logout` no sair. Detalhes de proxy/CSP: ver `docs/production-security.md` no backend.
+
+## Segurança (frontend)
+
+- Não commitar `.env` com segredos; usar `.env.example` como modelo.
+- Tokens: fluxo atual em `sessionStorage` — consciente de XSS; para maior rigor futuro, avaliar cookies httpOnly + backend.
+
+## Componentes e estado
+
+- Preferir hooks e componentes pequenos; lógica de dados em hooks ou camada `api`.
+- Formulários: validação com Zod alinhada ao backend quando existir contrato compartilhado.
+
+## Comandos
+
+- `npm run dev` — desenvolvimento
+- `npm run build` — build de produção
+- `npm run lint` / `npm run lint:fix` — ESLint
+- `npm run format` — Prettier
+- `npm run typecheck` — TypeScript sem emit
+
+## Nomenclatura
+
+- Arquivos de componentes: PascalCase (`AppHeader.tsx`); restantes kebab-case ou camelCase conforme pasta.
+- Pastas de features: kebab-case.
