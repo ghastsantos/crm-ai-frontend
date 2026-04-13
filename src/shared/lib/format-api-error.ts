@@ -11,6 +11,9 @@ const CODE_MESSAGES: Record<string, string> = {
   UNKNOWN: 'A solicitação falhou.',
   HTTP_ERROR: 'Erro de comunicação com o servidor.',
   INVALID_RESPONSE: 'Resposta inválida do servidor.',
+  FORBIDDEN: 'Você não tem acesso a este recurso.',
+  CARD_NOT_FOUND: 'Negócio não encontrado.',
+  INVALID_REFERENCE: 'Referência inválida nos dados enviados.',
 };
 
 export function formatApiError(err: unknown): string {
