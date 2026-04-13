@@ -6,7 +6,7 @@ import { Card, CardDescription, CardTitle } from '@/shared/ui/card';
 
 export function HomePage() {
   const { data, isPending, isError } = useCurrentUser();
-  const deals = useDeals();
+  const deals = useDeals({ authScope: data?.id });
 
   if (isPending) {
     return <p className="text-sm text-zinc-500">Carregando…</p>;
@@ -53,10 +53,10 @@ export function HomePage() {
           <p className="text-sm text-zinc-500">Carregando…</p>
         ) : deals.isError ? (
           <p className="text-sm text-zinc-600">Não foi possível carregar os negócios.</p>
-        ) : deals.data.length === 0 ? (
+        ) : (deals.data?.length ?? 0) === 0 ? (
           <p className="text-sm text-zinc-500">Nenhum negócio em andamento.</p>
         ) : (
-          <DealsBoard deals={deals.data} />
+          <DealsBoard deals={deals.data ?? []} />
         )}
       </section>
     </div>

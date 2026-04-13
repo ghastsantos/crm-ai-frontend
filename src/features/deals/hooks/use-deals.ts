@@ -1,9 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchDeals } from '../api/deals-api';
 
-export function useDeals() {
+type UseDealsOptions = {
+  authScope: string | number | null | undefined;
+  enabled?: boolean;
+};
+
+export function useDeals({ authScope, enabled = true }: UseDealsOptions) {
   return useQuery({
-    queryKey: ['deals'],
+    queryKey: ['deals', authScope],
     queryFn: fetchDeals,
+    enabled: enabled && Boolean(authScope),
   });
 }

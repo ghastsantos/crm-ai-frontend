@@ -12,7 +12,13 @@ export function DealsBoard({ deals }: DealsBoardProps) {
 
   return (
     <div className="-mx-1 overflow-x-auto pb-2">
-      <div className="grid min-w-[1080px] grid-cols-6 gap-3 px-1">
+      <div
+        className="grid gap-3 px-1"
+        style={{
+          gridTemplateColumns: `repeat(${DEAL_STAGES.length}, minmax(0, 1fr))`,
+          minWidth: `${DEAL_STAGES.length * 180}px`,
+        }}
+      >
         {DEAL_STAGES.map((stage, index) => {
           const items = byStage[stage];
           const isEntry = index === 0;
