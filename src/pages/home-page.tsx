@@ -1,9 +1,12 @@
 import { useCurrentUser } from '@/features/auth/hooks/use-current-user';
+import { useDeals } from '@/features/deals/hooks/use-deals';
+import { DealsBoard } from '@/features/deals/ui/deals-board';
 import { membershipRoleLabel } from '@/shared/lib/membership-role-label';
 import { Card, CardDescription, CardTitle } from '@/shared/ui/card';
 
 export function HomePage() {
   const { data, isPending, isError } = useCurrentUser();
+  const deals = useDeals();
 
   if (isPending) {
     return <p className="text-sm text-zinc-500">Carregando…</p>;
@@ -46,12 +49,15 @@ export function HomePage() {
         <h2 className="mb-3 text-xs font-medium uppercase tracking-widest text-zinc-400">
           Pipeline
         </h2>
-        <Card className="border-dashed">
-          <CardTitle className="text-sm">Dados do CRM</CardTitle>
-          <CardDescription>
-            Contatos e negócios aparecerão aqui quando a API estiver disponível.
-          </CardDescription>
-        </Card>
+        {deals.isPending ? (
+          <p className="text-sm text-zinc-500">Carregando…</p>
+        ) : deals.isError ? (
+          <p className="text-sm text-zinc-600">Não foi possível carregar os negócios.</p>
+        ) : deals.data.length === 0 ? (
+          <p className="text-sm text-zinc-500">Nenhum negócio em andamento.</p>
+        ) : (
+          <DealsBoard deals={deals.data} />
+        )}
       </section>
     </div>
   );
