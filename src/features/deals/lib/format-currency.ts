@@ -9,7 +9,7 @@ function getCurrencyFormatter(currency: string): Intl.NumberFormat {
         style: 'currency',
         currency,
       });
-    } catch (err) {
+    } catch {
       formatter = new Intl.NumberFormat('pt-BR', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
