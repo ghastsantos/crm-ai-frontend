@@ -9,7 +9,8 @@ function getCurrencyFormatter(currency: string): Intl.NumberFormat {
         style: 'currency',
         currency,
       });
-    } catch {
+    } catch (err) {
+      console.warn(`[formatCurrency] Moeda inválida "${currency}", usando fallback sem símbolo.`, err);
       formatter = new Intl.NumberFormat('pt-BR', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,

@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchDeals } from '../api/deals-api';
 
 type UseDealsOptions = {
-  authScope: string | number | null | undefined;
+  authScope: string | undefined;
   enabled?: boolean;
 };
 
