@@ -4,6 +4,7 @@ import { useSessionActive } from '@/features/auth/hooks/use-session-active';
 import { HomePage } from '@/pages/home-page';
 import { LoginPage } from '@/pages/login-page';
 import { RegisterPage } from '@/pages/register-page';
+import { SettingsPage } from '@/pages/settings-page';
 import { AppShell } from '@/widgets/app-shell/AppShell';
 
 function RequireAuth() {
@@ -36,11 +37,14 @@ export function AppRouter() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
         </Route>
+
         <Route element={<RequireAuth />}>
           <Route element={<AppShell />}>
             <Route path="/" element={<HomePage />} />
+            <Route path="/settings" element={<SettingsPage />} />
           </Route>
         </Route>
+
         <Route path="*" element={<CatchAll />} />
       </Routes>
     </BrowserRouter>
