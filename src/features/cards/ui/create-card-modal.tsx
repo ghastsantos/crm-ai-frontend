@@ -1,5 +1,4 @@
 import { useState, type FormEvent } from 'react';
-import { CARD_STAGES } from '@/entities/card/types';
 import { formatApiError } from '@/shared/lib/format-api-error';
 import { cn } from '@/shared/lib/cn';
 import { Button } from '@/shared/ui/button';
@@ -7,43 +6,33 @@ import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 import { Modal } from '@/shared/ui/modal';
 import { useCreateCard } from '../hooks/use-cards';
-import { cardStageLabel } from '../lib/card-stage-label';
 import { createCardFormSchema } from '../model/schemas';
-import type { CardStage } from '@/entities/card/types';
 
 type CreateCardModalProps = {
   open: boolean;
   onClose: () => void;
   organizationId: string;
+  defaultPipelineColumnId: string | null;
+  defaultColumnTitle?: string | null;
 };
 
 type FormState = {
   title: string;
-  companyName: string;
-  contactName: string;
+  pipelineColumnId: string;
   value: string;
   email: string;
   phone: string;
   notes: string;
-  stage: CardStage;
 };
 
-const initialState: FormState = {
+const emptyForm = (columnId: string): FormState => ({
   title: '',
-  companyName: '',
-  contactName: '',
+  pipelineColumnId: columnId,
   value: '',
   email: '',
   phone: '',
   notes: '',
-  stage: 'LEAD_CAPTADO',
-};
-
-const selectClassName = cn(
-  'flex h-9 w-full rounded-md border border-zinc-200 bg-white px-3 py-1 text-sm text-zinc-900 shadow-sm outline-none transition-colors',
-  'focus-visible:border-zinc-400 focus-visible:ring-2 focus-visible:ring-zinc-200',
-  'disabled:cursor-not-allowed disabled:opacity-50'
-);
+});
 
 const textareaClassName = cn(
   'flex min-h-[88px] w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm outline-none transition-colors',
@@ -52,15 +41,22 @@ const textareaClassName = cn(
   'disabled:cursor-not-allowed disabled:opacity-50'
 );
 
-export function CreateCardModal({ open, onClose, organizationId }: CreateCardModalProps) {
-  const [values, setValues] = useState<FormState>(initialState);
+export function CreateCardModal({
+  open,
+  onClose,
+  organizationId,
+  defaultPipelineColumnId,
+  defaultColumnTitle,
+}: CreateCardModalProps) {
+  const columnId = defaultPipelineColumnId ?? '';
+  const [values, setValues] = useState<FormState>(() => emptyForm(columnId));
   const [clientErrors, setClientErrors] = useState<Partial<Record<keyof FormState, string>>>({});
   const [formError, setFormError] = useState<string | null>(null);
 
   const mutation = useCreateCard();
 
   function resetForm() {
-    setValues(initialState);
+    setValues(emptyForm(defaultPipelineColumnId ?? ''));
     setClientErrors({});
     setFormError(null);
   }
@@ -81,13 +77,11 @@ export function CreateCardModal({ open, onClose, organizationId }: CreateCardMod
       const fe = parsed.error.flatten().fieldErrors;
       setClientErrors({
         title: fe.title?.[0],
-        companyName: fe.companyName?.[0],
-        contactName: fe.contactName?.[0],
+        pipelineColumnId: fe.pipelineColumnId?.[0],
         value: fe.value?.[0],
         email: fe.email?.[0],
         phone: fe.phone?.[0],
         notes: fe.notes?.[0],
-        stage: fe.stage?.[0],
       });
       return;
     }
@@ -96,10 +90,8 @@ export function CreateCardModal({ open, onClose, organizationId }: CreateCardMod
       {
         organizationId,
         title: parsed.data.title,
-        stage: parsed.data.stage,
+        pipelineColumnId: parsed.data.pipelineColumnId,
         value: parsed.data.value ?? null,
-        companyName: parsed.data.companyName ?? null,
-        contactName: parsed.data.contactName ?? null,
         email: parsed.data.email ?? null,
         phone: parsed.data.phone ?? null,
         notes: parsed.data.notes ?? null,
@@ -136,6 +128,12 @@ export function CreateCardModal({ open, onClose, organizationId }: CreateCardMod
           </p>
         ) : null}
 
+        {defaultColumnTitle ? (
+          <p className="text-xs text-zinc-600">
+            Coluna: <span className="font-medium text-zinc-900">{defaultColumnTitle}</span>
+          </p>
+        ) : null}
+
         <div className="space-y-1.5">
           <Label htmlFor="card-title">Título</Label>
           <Input
@@ -147,36 +145,6 @@ export function CreateCardModal({ open, onClose, organizationId }: CreateCardMod
           />
           {clientErrors.title ? (
             <p className="text-xs text-zinc-600">{clientErrors.title}</p>
-          ) : null}
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="card-company">Empresa</Label>
-          <Input
-            id="card-company"
-            name="companyName"
-            autoComplete="organization"
-            value={values.companyName}
-            onChange={(e) => setValues((v) => ({ ...v, companyName: e.target.value }))}
-            aria-invalid={Boolean(clientErrors.companyName)}
-          />
-          {clientErrors.companyName ? (
-            <p className="text-xs text-zinc-600">{clientErrors.companyName}</p>
-          ) : null}
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="card-contact">Contato</Label>
-          <Input
-            id="card-contact"
-            name="contactName"
-            autoComplete="name"
-            value={values.contactName}
-            onChange={(e) => setValues((v) => ({ ...v, contactName: e.target.value }))}
-            aria-invalid={Boolean(clientErrors.contactName)}
-          />
-          {clientErrors.contactName ? (
-            <p className="text-xs text-zinc-600">{clientErrors.contactName}</p>
           ) : null}
         </div>
 
@@ -232,27 +200,6 @@ export function CreateCardModal({ open, onClose, organizationId }: CreateCardMod
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="card-stage">Estágio</Label>
-          <select
-            id="card-stage"
-            name="stage"
-            value={values.stage}
-            onChange={(e) => setValues((v) => ({ ...v, stage: e.target.value as CardStage }))}
-            aria-invalid={Boolean(clientErrors.stage)}
-            className={selectClassName}
-          >
-            {CARD_STAGES.map((stage) => (
-              <option key={stage} value={stage}>
-                {cardStageLabel(stage)}
-              </option>
-            ))}
-          </select>
-          {clientErrors.stage ? (
-            <p className="text-xs text-zinc-600">{clientErrors.stage}</p>
-          ) : null}
-        </div>
-
-        <div className="space-y-1.5">
           <Label htmlFor="card-notes">Observações</Label>
           <textarea
             id="card-notes"
@@ -268,11 +215,13 @@ export function CreateCardModal({ open, onClose, organizationId }: CreateCardMod
           ) : null}
         </div>
 
+        <input type="hidden" name="pipelineColumnId" value={values.pipelineColumnId} />
+
         <div className="flex items-center justify-end gap-2 pt-1">
           <Button type="button" variant="ghost" onClick={handleClose} disabled={mutation.isPending}>
             Cancelar
           </Button>
-          <Button type="submit" disabled={mutation.isPending}>
+          <Button type="submit" disabled={mutation.isPending || !values.pipelineColumnId}>
             {mutation.isPending ? 'Criando…' : 'Criar negócio'}
           </Button>
         </div>
