@@ -1,12 +1,13 @@
 import { useCurrentUser } from '@/features/auth/hooks/use-current-user';
-import { useDeals } from '@/features/deals/hooks/use-deals';
-import { DealsBoard } from '@/features/deals/ui/deals-board';
+import { useCards } from '@/features/cards/hooks/use-cards';
+import { CardsBoard } from '@/features/cards/ui/cards-board';
 import { membershipRoleLabel } from '@/shared/lib/membership-role-label';
 import { Card, CardDescription, CardTitle } from '@/shared/ui/card';
 
 export function HomePage() {
   const { data, isPending, isError } = useCurrentUser();
-  const deals = useDeals({ authScope: data?.id });
+  const organizationId = data?.memberships[0]?.organizationId;
+  const cards = useCards(organizationId);
 
   if (isPending) {
     return <p className="text-sm text-zinc-500">Carregando…</p>;
@@ -49,14 +50,16 @@ export function HomePage() {
         <h2 className="mb-3 text-xs font-medium uppercase tracking-widest text-zinc-400">
           Pipeline
         </h2>
-        {deals.isPending ? (
+        {!organizationId ? (
+          <p className="text-sm text-zinc-500">
+            Vincule-se a uma organização para gerenciar negócios.
+          </p>
+        ) : cards.isPending ? (
           <p className="text-sm text-zinc-500">Carregando…</p>
-        ) : deals.isError ? (
+        ) : cards.isError ? (
           <p className="text-sm text-zinc-600">Não foi possível carregar os negócios.</p>
-        ) : (deals.data?.length ?? 0) === 0 ? (
-          <p className="text-sm text-zinc-500">Nenhum negócio em andamento.</p>
         ) : (
-          <DealsBoard deals={deals.data ?? []} />
+          <CardsBoard cards={cards.data} organizationId={organizationId} />
         )}
       </section>
     </div>
