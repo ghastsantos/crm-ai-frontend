@@ -58,10 +58,15 @@ export async function updateCard(cardId: string, input: UpdateCardInput): Promis
   return toCard(raw);
 }
 
-export async function moveCard(cardId: string, pipelineColumnId: string): Promise<Card> {
+export type MoveCardInput = {
+  pipelineColumnId: string;
+  position?: number;
+};
+
+export async function moveCard(cardId: string, input: MoveCardInput): Promise<Card> {
   const raw = await apiRequest<RawCard>(`/api/v1/cards/${cardId}/move`, {
     method: 'PATCH',
-    body: JSON.stringify({ pipelineColumnId }),
+    body: JSON.stringify(input),
   });
   return toCard(raw);
 }

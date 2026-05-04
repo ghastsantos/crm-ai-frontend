@@ -14,6 +14,9 @@ const CODE_MESSAGES: Record<string, string> = {
   FORBIDDEN: 'Você não tem acesso a este recurso.',
   CARD_NOT_FOUND: 'Negócio não encontrado.',
   INVALID_REFERENCE: 'Referência inválida nos dados enviados.',
+  INVALID_CURRENT_PASSWORD: 'Senha atual incorreta.',
+  PASSWORD_UNCHANGED: 'A nova senha precisa ser diferente da atual.',
+  ORGANIZATION_NOT_FOUND: 'Organização não encontrada.',
 };
 
 export function formatApiError(err: unknown): string {

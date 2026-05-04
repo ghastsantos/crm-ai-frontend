@@ -18,9 +18,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         'inline-flex h-9 cursor-pointer items-center justify-center rounded-md px-4 text-sm font-medium tracking-tight transition-colors',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300 focus-visible:ring-offset-2',
         'disabled:pointer-events-none disabled:opacity-50',
-        variant === 'primary' && 'bg-zinc-900 text-white hover:bg-zinc-800',
-        variant === 'ghost' && 'text-zinc-700 hover:bg-zinc-100',
-        variant === 'outline' && 'border border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50',
+        'dark:focus-visible:ring-zinc-700 dark:focus-visible:ring-offset-zinc-950',
+        variant === 'primary' &&
+          'bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white',
+        variant === 'ghost' &&
+          'text-zinc-700 hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-800',
+        variant === 'outline' &&
+          'border border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800',
         className
       )}
       {...props}

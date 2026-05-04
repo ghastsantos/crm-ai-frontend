@@ -36,11 +36,11 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
       <div
         aria-hidden="true"
         onClick={onClose}
-        className="absolute inset-0 bg-zinc-900/40 backdrop-blur-[1px]"
+        className="absolute inset-0 bg-zinc-900/40 backdrop-blur-[1px] dark:bg-black/60"
       />
       <div
         className={cn(
-          'relative z-10 w-full max-w-md rounded-lg border border-zinc-200 bg-white p-5 shadow-lg',
+          'relative z-10 w-full max-w-md rounded-lg border border-zinc-200 bg-white p-5 shadow-lg dark:border-zinc-800 dark:bg-zinc-900',
           className
         )}
       >
@@ -50,7 +50,7 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
             type="button"
             onClick={onClose}
             aria-label="Fechar"
-            className="inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300"
+            className="inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100 dark:focus-visible:ring-zinc-700"
           >
             <svg
               width="16"

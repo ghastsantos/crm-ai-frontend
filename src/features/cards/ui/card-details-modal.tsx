@@ -1,14 +1,20 @@
 import { useState, type FormEvent } from 'react';
 import type { Card } from '@/entities/card/types';
 import type { PipelineColumn } from '@/entities/pipeline-column/types';
+import { useLocale } from '@/features/locale/hooks/use-locale';
 import { formatApiError } from '@/shared/lib/format-api-error';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 import { Modal } from '@/shared/ui/modal';
+import { MoneyInput } from '@/shared/ui/money-input';
+import { PhoneInput } from '@/shared/ui/phone-input';
 import { useDeleteCard, useUpdateCard } from '../hooks/use-cards';
 import { editCardFormSchema } from '../model/schemas';
 import { formatCurrency } from '../lib/format-currency';
+
+const TITLE_MAX = 200;
+const NOTES_MAX = 500;
 
 type CardDetailsModalProps = {
   card: Card;
@@ -23,6 +29,7 @@ export function CardDetailsModal({
   organizationId,
   onClose,
 }: CardDetailsModalProps) {
+  const { t, locale } = useLocale();
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(() => card.title);
   const [value, setValue] = useState(() =>
@@ -37,7 +44,8 @@ export function CardDetailsModal({
   const updateMutation = useUpdateCard();
   const deleteMutation = useDeleteCard();
 
-  const columnTitle = columns.find((c) => c.id === card.pipelineColumnId)?.title ?? 'Coluna';
+  const columnTitle =
+    columns.find((c) => c.id === card.pipelineColumnId)?.title ?? t('card.column_pill');
 
   function handleClose() {
     if (updateMutation.isPending || deleteMutation.isPending) return;
@@ -101,7 +109,7 @@ export function CardDetailsModal({
   }
 
   function handleDelete() {
-    if (!window.confirm('Excluir este negócio? Esta ação não pode ser desfeita.')) return;
+    if (!window.confirm(t('card.confirm_delete'))) return;
     deleteMutation.mutate(
       { cardId: card.id, organizationId },
       {
@@ -121,72 +129,74 @@ export function CardDetailsModal({
       onClose={handleClose}
       title={
         <>
-          <h2 className="truncate text-base font-medium tracking-tight text-zinc-900">
+          <h2 className="truncate text-base font-medium tracking-tight text-zinc-900 dark:text-zinc-100">
             {card.title}
           </h2>
-          <p className="mt-0.5 truncate text-xs text-zinc-500">{columnTitle}</p>
+          <p className="mt-0.5 truncate text-xs text-zinc-500 dark:text-zinc-400">{columnTitle}</p>
         </>
       }
     >
       <div className="flex flex-col gap-3">
         {formError ? (
-          <p className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-700">
+          <p className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200">
             {formError}
           </p>
         ) : null}
 
         {editing ? (
           <form onSubmit={handleSave} className="space-y-3">
-            {clientError ? <p className="text-xs text-zinc-600">{clientError}</p> : null}
+            {clientError ? (
+              <p className="text-xs text-zinc-600 dark:text-zinc-400">{clientError}</p>
+            ) : null}
             <div className="space-y-1.5">
-              <Label htmlFor="edit-title">Título</Label>
+              <Label htmlFor="edit-title">{t('card.title')}</Label>
               <Input
                 id="edit-title"
                 value={title}
+                maxLength={TITLE_MAX}
                 onChange={(e) => setTitle(e.target.value)}
+                onBlur={(e) => setTitle(e.target.value.trim())}
                 aria-invalid={Boolean(clientError)}
               />
+              <p className="text-right text-xs text-zinc-400 dark:text-zinc-500">
+                {title.length}/{TITLE_MAX}
+              </p>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="edit-value">Valor (BRL)</Label>
-              <Input
-                id="edit-value"
-                inputMode="decimal"
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
-              />
+              <Label htmlFor="edit-value">{t('card.value')}</Label>
+              <MoneyInput id="edit-value" value={value} onValueChange={setValue} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="edit-email">E-mail</Label>
+              <Label htmlFor="edit-email">{t('card.email')}</Label>
               <Input
                 id="edit-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onBlur={(e) => setEmail(e.target.value.trim().toLowerCase())}
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="edit-phone">Telefone</Label>
-              <Input
-                id="edit-phone"
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-              />
+              <Label htmlFor="edit-phone">{t('card.phone')}</Label>
+              <PhoneInput id="edit-phone" value={phone} onValueChange={setPhone} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="edit-notes">Observações</Label>
+              <Label htmlFor="edit-notes">{t('card.notes')}</Label>
               <textarea
                 id="edit-notes"
                 rows={3}
                 value={notes}
+                maxLength={NOTES_MAX}
                 onChange={(e) => setNotes(e.target.value)}
-                className="flex min-h-[72px] w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-zinc-200"
+                className="flex min-h-[72px] w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus-visible:border-zinc-600 dark:focus-visible:ring-zinc-700"
               />
+              <p className="text-right text-xs text-zinc-400 dark:text-zinc-500">
+                {notes.length}/{NOTES_MAX}
+              </p>
             </div>
             <div className="flex flex-wrap gap-2 pt-1">
               <Button type="submit" disabled={updateMutation.isPending}>
-                {updateMutation.isPending ? 'Salvando…' : 'Salvar'}
+                {updateMutation.isPending ? t('common.saving') : t('common.save')}
               </Button>
               <Button
                 type="button"
@@ -202,37 +212,37 @@ export function CardDetailsModal({
                   setClientError(null);
                 }}
               >
-                Cancelar
+                {t('common.cancel')}
               </Button>
             </div>
           </form>
         ) : (
           <>
-            <span className="inline-flex w-fit items-center rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-medium text-zinc-600">
+            <span className="inline-flex w-fit items-center rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
               {columnTitle}
             </span>
-            {card.email ? <Field label="E-mail" value={card.email} /> : null}
-            {card.phone ? <Field label="Telefone" value={card.phone} /> : null}
-            <Field label="Valor" value={formatCurrency(card.value)} />
-            {card.notes ? <Field label="Observações" value={card.notes} /> : null}
-            <Field label="Atualizado em" value={formatUpdatedAt(card.updatedAt)} />
-            <div className="flex flex-wrap gap-2 border-t border-zinc-100 pt-3">
+            {card.email ? <Field label={t('card.email')} value={card.email} /> : null}
+            {card.phone ? <Field label={t('card.phone')} value={card.phone} /> : null}
+            <Field label={t('card.value')} value={formatCurrency(card.value)} />
+            {card.notes ? <Field label={t('card.notes')} value={card.notes} /> : null}
+            <Field label={t('card.updated_at')} value={formatUpdatedAt(card.updatedAt, locale)} />
+            <div className="flex flex-wrap gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
               <Button
                 type="button"
                 variant="ghost"
                 className="text-xs"
                 onClick={() => setEditing(true)}
               >
-                Editar
+                {t('common.edit')}
               </Button>
               <Button
                 type="button"
                 variant="ghost"
-                className="text-xs text-red-700 hover:bg-red-50"
+                className="text-xs text-red-700 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-950/40"
                 onClick={handleDelete}
                 disabled={deleteMutation.isPending}
               >
-                {deleteMutation.isPending ? 'Excluindo…' : 'Excluir'}
+                {deleteMutation.isPending ? t('common.deleting') : t('common.delete')}
               </Button>
             </div>
           </>
@@ -244,17 +254,19 @@ export function CardDetailsModal({
 
 function Field({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border-t border-zinc-100 pt-3">
-      <p className="text-[10px] font-medium uppercase tracking-widest text-zinc-400">{label}</p>
-      <p className="mt-1 whitespace-pre-wrap text-sm text-zinc-900">{value}</p>
+    <div className="border-t border-zinc-100 pt-3 dark:border-zinc-800">
+      <p className="text-[10px] font-medium uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+        {label}
+      </p>
+      <p className="mt-1 whitespace-pre-wrap text-sm text-zinc-900 dark:text-zinc-100">{value}</p>
     </div>
   );
 }
 
-function formatUpdatedAt(value: string): string {
+function formatUpdatedAt(value: string, locale: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString('pt-BR', {
+  return date.toLocaleDateString(locale, {
     day: '2-digit',
     month: 'short',
     year: 'numeric',

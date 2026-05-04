@@ -8,6 +8,21 @@ const optionalTrimmed = (max: number, message: string) =>
     .optional()
     .transform((v) => (v && v.length > 0 ? v : undefined));
 
+const phoneSchema = z
+  .string()
+  .trim()
+  .optional()
+  .transform((v) => (v && v.length > 0 ? v : undefined))
+  .pipe(
+    z
+      .string()
+      .min(8, { message: 'Telefone muito curto' })
+      .max(20, { message: 'Telefone muito longo' })
+      .regex(/^[+\d()\s-]+$/, { message: 'Telefone inválido' })
+      .refine((v) => v.replace(/\D/g, '').length >= 8, { message: 'Telefone inválido' })
+      .optional()
+  );
+
 export const createCardFormSchema = z.object({
   title: z
     .string()
@@ -35,7 +50,7 @@ export const createCardFormSchema = z.object({
     .optional()
     .transform((v) => (v && v.length > 0 ? v : undefined))
     .pipe(z.string().email({ message: 'E-mail inválido' }).max(320).optional()),
-  phone: optionalTrimmed(50, 'Telefone muito longo'),
+  phone: phoneSchema,
   notes: optionalTrimmed(500, 'Observações muito longas'),
 });
 
@@ -53,7 +68,7 @@ export const editCardFormSchema = z.object({
     .optional()
     .transform((v) => (v && v.length > 0 ? v : undefined))
     .pipe(z.string().email({ message: 'E-mail inválido' }).max(320).optional()),
-  phone: optionalTrimmed(50, 'Telefone muito longo'),
+  phone: phoneSchema,
   notes: optionalTrimmed(500, 'Observações muito longas'),
 });
 

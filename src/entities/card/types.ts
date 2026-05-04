@@ -8,6 +8,7 @@ export type Card = {
   email: string | null;
   phone: string | null;
   notes: string | null;
+  position: number;
   organizationId: string;
   contactId: string | null;
   createdAt: string;
