@@ -21,6 +21,11 @@ export const registerFormSchema = z.object({
     .trim()
     .min(1, { message: 'Informe o nome da organização' })
     .max(200, { message: 'Nome da organização muito longo' }),
+  organizationNiche: z
+    .string()
+    .trim()
+    .min(1, { message: 'Informe o nicho da empresa' })
+    .max(200, { message: 'Nicho muito longo' }),
 });
 
 export const loginFormSchema = z.object({

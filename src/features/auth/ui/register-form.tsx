@@ -16,6 +16,7 @@ const initialValues: RegisterFormValues = {
   password: '',
   name: '',
   organizationName: '',
+  organizationNiche: '',
 };
 
 export function RegisterForm() {
@@ -56,6 +57,7 @@ export function RegisterForm() {
         password: fe.password?.[0],
         name: fe.name?.[0],
         organizationName: fe.organizationName?.[0],
+        organizationNiche: fe.organizationNiche?.[0],
       });
       return;
     }
@@ -94,6 +96,20 @@ export function RegisterForm() {
           />
           {clientErrors.organizationName ? (
             <p className="text-xs text-zinc-600">{clientErrors.organizationName}</p>
+          ) : null}
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="register-niche">Nicho da empresa</Label>
+          <Input
+            id="register-niche"
+            name="organizationNiche"
+            autoComplete="off"
+            value={values.organizationNiche}
+            onChange={(e) => setValues((v) => ({ ...v, organizationNiche: e.target.value }))}
+            aria-invalid={Boolean(clientErrors.organizationNiche)}
+          />
+          {clientErrors.organizationNiche ? (
+            <p className="text-xs text-zinc-600">{clientErrors.organizationNiche}</p>
           ) : null}
         </div>
         <div className="space-y-1.5">
