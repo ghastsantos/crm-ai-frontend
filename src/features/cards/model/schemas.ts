@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { CARD_STAGES } from '@/entities/card/types';
 
 const optionalTrimmed = (max: number, message: string) =>
   z
@@ -9,14 +8,28 @@ const optionalTrimmed = (max: number, message: string) =>
     .optional()
     .transform((v) => (v && v.length > 0 ? v : undefined));
 
+const phoneSchema = z
+  .string()
+  .trim()
+  .optional()
+  .transform((v) => (v && v.length > 0 ? v : undefined))
+  .pipe(
+    z
+      .string()
+      .min(8, { message: 'Telefone muito curto' })
+      .max(20, { message: 'Telefone muito longo' })
+      .regex(/^[+\d()\s-]+$/, { message: 'Telefone inválido' })
+      .refine((v) => v.replace(/\D/g, '').length >= 8, { message: 'Telefone inválido' })
+      .optional()
+  );
+
 export const createCardFormSchema = z.object({
   title: z
     .string()
     .trim()
     .min(2, { message: 'Informe o título do negócio' })
     .max(200, { message: 'Título muito longo' }),
-  companyName: optionalTrimmed(200, 'Nome da empresa muito longo'),
-  contactName: optionalTrimmed(200, 'Nome do contato muito longo'),
+  pipelineColumnId: z.string().min(1, { message: 'Selecione a coluna' }),
   value: z
     .string()
     .trim()
@@ -37,9 +50,26 @@ export const createCardFormSchema = z.object({
     .optional()
     .transform((v) => (v && v.length > 0 ? v : undefined))
     .pipe(z.string().email({ message: 'E-mail inválido' }).max(320).optional()),
-  phone: optionalTrimmed(50, 'Telefone muito longo'),
+  phone: phoneSchema,
   notes: optionalTrimmed(500, 'Observações muito longas'),
-  stage: z.enum(CARD_STAGES, { message: 'Selecione um estágio' }),
 });
 
 export type CreateCardFormValues = z.infer<typeof createCardFormSchema>;
+
+export const editCardFormSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(2, { message: 'Informe o título do negócio' })
+    .max(200, { message: 'Título muito longo' }),
+  email: z
+    .string()
+    .trim()
+    .optional()
+    .transform((v) => (v && v.length > 0 ? v : undefined))
+    .pipe(z.string().email({ message: 'E-mail inválido' }).max(320).optional()),
+  phone: phoneSchema,
+  notes: optionalTrimmed(500, 'Observações muito longas'),
+});
+
+export type EditCardFormValues = z.infer<typeof editCardFormSchema>;
