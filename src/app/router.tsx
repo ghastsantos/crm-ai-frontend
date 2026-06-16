@@ -6,6 +6,7 @@ import { LoginPage } from '@/pages/login-page';
 import { RegisterPage } from '@/pages/register-page';
 import { SettingsPage } from '@/pages/settings-page';
 import { PipelineLogsPage } from '@/pages/admin/pipeline-logs-page';
+import { MembersPage } from '@/pages/admin/members-page';
 import { AppShell } from '@/widgets/app-shell/AppShell';
 
 function RequireAuth() {
@@ -50,6 +51,7 @@ export function AppRouter() {
             <Route path="/" element={<HomePage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/admin/pipeline-logs" element={<PipelineLogsPage />} />
+            <Route path="/admin/members" element={<MembersPage />} />
           </Route>
         </Route>
 
