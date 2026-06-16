@@ -21,15 +21,17 @@ export function AppHeader() {
       try {
         await logoutRequest();
       } catch {
-        /* servidor indisponível: limpar sessão local na mesma */
+        /* servidor indisponível: limpar sessão local da mesma forma */
       }
     }
+
     clearLocalSession();
     queryClient.removeQueries({ queryKey: ['me'] });
     navigate('/login');
   }
 
   let label: string;
+
   if (isPending) {
     label = 'Carregando…';
   } else if (isError) {
@@ -41,14 +43,34 @@ export function AppHeader() {
   }
 
   return (
-    <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
+    <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white/90 shadow-sm backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/90">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4 lg:max-w-[1600px] lg:px-8">
         <div className="flex min-w-0 items-center gap-3">
-          <span className="text-xs font-medium uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
-            {t('app.brand')}
-          </span>
+          <NavLink
+            to="/"
+            aria-label="Ir para o menu inicial"
+            title="Ir para o menu inicial"
+            className={({ isActive }) =>
+              cn(
+                'group inline-flex h-8 items-center gap-2 rounded-lg border border-transparent px-2.5 text-xs font-semibold uppercase tracking-widest text-zinc-500 transition-all duration-200',
+                'hover:-translate-y-0.5 hover:border-zinc-200 hover:bg-zinc-50 hover:text-zinc-900 hover:shadow-sm',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300',
+                'dark:text-zinc-400 dark:hover:border-zinc-800 dark:hover:bg-zinc-900 dark:hover:text-zinc-100 dark:focus-visible:ring-zinc-700',
+                isActive &&
+                  'border-zinc-200 bg-zinc-50 text-zinc-900 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100'
+              )
+            }
+          >
+            <span className="flex h-5 w-5 items-center justify-center rounded-md bg-zinc-900 text-[10px] font-bold text-white transition-transform duration-200 group-hover:scale-105 dark:bg-zinc-100 dark:text-zinc-900">
+              C
+            </span>
+
+            <span>{t('app.brand')}</span>
+          </NavLink>
+
           <OrganizationSwitcher />
         </div>
+
         <div className="flex items-center gap-2 sm:gap-4">
           <NavLink
             to="/settings"
@@ -64,11 +86,13 @@ export function AppHeader() {
           >
             <SettingsIcon />
           </NavLink>
+
           {label ? (
             <span className="hidden max-w-[200px] truncate text-xs text-zinc-600 dark:text-zinc-400 sm:inline">
               {label}
             </span>
           ) : null}
+
           <Button type="button" variant="ghost" className="h-8 px-2 text-xs" onClick={handleLogout}>
             {t('app.logout')}
           </Button>
