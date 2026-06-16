@@ -43,42 +43,49 @@ export function AppHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white/90 shadow-sm backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/90">
-      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4 lg:max-w-[1600px] lg:px-8">
-        <div className="flex min-w-0 items-center gap-3">
+    <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white/95 shadow-[0_8px_30px_-24px_rgba(0,0,0,0.35)] backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/95">
+      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-4 px-4 lg:max-w-[1600px] lg:px-8">
+        <div className="flex min-w-0 items-center gap-4">
           <NavLink
             to="/"
             aria-label="Ir para o menu inicial"
             title="Ir para o menu inicial"
             className={({ isActive }) =>
               cn(
-                'group inline-flex h-8 items-center gap-2 rounded-lg border border-transparent px-2.5 text-xs font-semibold uppercase tracking-widest text-zinc-500 transition-all duration-200',
-                'hover:-translate-y-0.5 hover:border-zinc-200 hover:bg-zinc-50 hover:text-zinc-900 hover:shadow-sm',
+                'group inline-flex h-10 items-center gap-3 rounded-xl border border-zinc-200 bg-white px-3 pr-4 text-sm font-semibold tracking-[0.18em] text-zinc-800 shadow-sm transition-all duration-200',
+                'hover:-translate-y-0.5 hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-950 hover:shadow-md',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300',
-                'dark:text-zinc-400 dark:hover:border-zinc-800 dark:hover:bg-zinc-900 dark:hover:text-zinc-100 dark:focus-visible:ring-zinc-700',
+                'dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:border-zinc-700 dark:hover:bg-zinc-800 dark:focus-visible:ring-zinc-700',
                 isActive &&
-                  'border-zinc-200 bg-zinc-50 text-zinc-900 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100'
+                  'border-zinc-300 bg-zinc-50 text-zinc-950 shadow-md dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100'
               )
             }
           >
-            <span className="flex h-5 w-5 items-center justify-center rounded-md bg-zinc-900 text-[10px] font-bold text-white transition-transform duration-200 group-hover:scale-105 dark:bg-zinc-100 dark:text-zinc-900">
-              C
+            <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-zinc-950 text-[11px] font-bold tracking-normal text-white shadow-sm transition-transform duration-200 group-hover:scale-105 dark:bg-zinc-100 dark:text-zinc-950">
+              AI
             </span>
 
-            <span>{t('app.brand')}</span>
+            <span>CRM</span>
           </NavLink>
 
-          <OrganizationSwitcher />
+          <div className="hidden h-6 w-px bg-zinc-200 dark:bg-zinc-800 sm:block" />
+
+          <div className="min-w-0">
+            <OrganizationSwitcher />
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-3">
           <NavLink
             to="/settings"
             className={({ isActive }) =>
               cn(
-                'inline-flex h-8 w-8 items-center justify-center rounded-md text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300',
-                'dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100 dark:focus-visible:ring-zinc-700',
-                isActive && 'bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100'
+                'inline-flex h-9 w-9 items-center justify-center rounded-xl border border-transparent text-zinc-500 transition-all duration-200',
+                'hover:border-zinc-200 hover:bg-zinc-50 hover:text-zinc-950 hover:shadow-sm',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300',
+                'dark:text-zinc-400 dark:hover:border-zinc-800 dark:hover:bg-zinc-900 dark:hover:text-zinc-100 dark:focus-visible:ring-zinc-700',
+                isActive &&
+                  'border-zinc-200 bg-zinc-50 text-zinc-950 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100'
               )
             }
             aria-label={t('app.settings')}
@@ -88,12 +95,18 @@ export function AppHeader() {
           </NavLink>
 
           {label ? (
-            <span className="hidden max-w-[200px] truncate text-xs text-zinc-600 dark:text-zinc-400 sm:inline">
-              {label}
-            </span>
+            <div className="hidden max-w-[220px] items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-600 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 sm:flex">
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-950 dark:bg-zinc-100" />
+              <span className="truncate">{label}</span>
+            </div>
           ) : null}
 
-          <Button type="button" variant="ghost" className="h-8 px-2 text-xs" onClick={handleLogout}>
+          <Button
+            type="button"
+            variant="ghost"
+            className="h-9 rounded-xl border border-zinc-200 bg-white px-3 text-xs font-medium text-zinc-600 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-zinc-50 hover:text-zinc-950 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+            onClick={handleLogout}
+          >
             {t('app.logout')}
           </Button>
         </div>
