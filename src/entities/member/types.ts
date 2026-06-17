@@ -4,6 +4,7 @@ export type OrganizationMember = {
   id: string;
   role: OrganizationMemberRole;
   createdAt: string;
+  userId: string;
   organizationId: string;
   user: {
     id: string;

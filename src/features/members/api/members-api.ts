@@ -10,9 +10,12 @@ export type CreateMemberInput = {
 };
 
 export async function fetchMembers(organizationId: string): Promise<OrganizationMember[]> {
-  return apiRequest<OrganizationMember[]>(
-    `/api/v1/members?organizationId=${encodeURIComponent(organizationId)}`
-  );
+  const params = new URLSearchParams();
+  params.set('organizationId', organizationId);
+
+  return apiRequest<OrganizationMember[]>(`/api/v1/members?${params.toString()}`, {
+    method: 'GET',
+  });
 }
 
 export async function createMember(input: CreateMemberInput): Promise<OrganizationMember> {
@@ -22,8 +25,8 @@ export async function createMember(input: CreateMemberInput): Promise<Organizati
   });
 }
 
-export async function deleteMember(memberId: string): Promise<void> {
-  await apiRequest(`/api/v1/members/${memberId}`, {
+export async function deleteMember(id: string): Promise<void> {
+  return apiRequest<void>(`/api/v1/members/${id}`, {
     method: 'DELETE',
   });
 }

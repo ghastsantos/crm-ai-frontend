@@ -1,272 +1,308 @@
-import { useState, type FormEvent } from 'react';
+import { type FormEvent, useState } from 'react';
 import type { OrganizationMember, OrganizationMemberRole } from '@/entities/member/types';
 import { useCreateMember, useDeleteMember, useMembers } from '@/features/members/hooks/use-members';
 import { useActiveOrganization } from '@/features/organizations/hooks/use-active-organization';
 import { cn } from '@/shared/lib/cn';
 import { formatApiError } from '@/shared/lib/format-api-error';
 import { Button } from '@/shared/ui/button';
-import { Card } from '@/shared/ui/card';
-import { Input } from '@/shared/ui/input';
-import { Label } from '@/shared/ui/label';
 
 const roleLabel: Record<OrganizationMemberRole, string> = {
   OWNER: 'Admin',
-  MEMBER: 'Membro',
+  MEMBER: 'Funcionario',
 };
 
 export function MembersPage() {
   const { active } = useActiveOrganization();
+  const isAdmin = active?.isOwner === true;
   const organizationId = active?.organizationId;
-  const isOwner = active?.isOwner === true;
-  const membersQuery = useMembers(organizationId, isOwner);
 
-  if (!isOwner) {
-    return (
-      <div className="mx-auto w-full max-w-3xl">
-        <Card className="space-y-2">
-          <p className="text-xs font-medium uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
-            Acesso restrito
-          </p>
-          <h1 className="text-lg font-medium tracking-tight text-zinc-900 dark:text-zinc-100">
-            Area exclusiva para administradores
-          </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Apenas admins da organizacao atual podem gerenciar membros.
-          </p>
-        </Card>
-      </div>
-    );
-  }
-
-  return (
-    <div className="mx-auto grid w-full max-w-5xl gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
-      <Card className="space-y-4">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
-              Administracao
-            </p>
-            <h1 className="mt-1 text-lg font-medium tracking-tight text-zinc-900 dark:text-zinc-100">
-              Membros da organizacao
-            </h1>
-          </div>
-          <span className="rounded-md border border-zinc-200 px-2 py-1 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
-            {membersQuery.data?.length ?? 0} usuario(s)
-          </span>
-        </div>
-
-        {membersQuery.isLoading ? (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">Carregando membros...</p>
-        ) : membersQuery.isError ? (
-          <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200">
-            Nao foi possivel carregar os membros.
-          </p>
-        ) : membersQuery.data?.length ? (
-          <div className="divide-y divide-zinc-100 overflow-hidden rounded-md border border-zinc-100 dark:divide-zinc-800 dark:border-zinc-800">
-            {membersQuery.data.map((member) => (
-              <MemberRow key={member.id} member={member} organizationId={organizationId} />
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Nenhum membro cadastrado nesta organizacao.
-          </p>
-        )}
-      </Card>
-
-      <CreateMemberPanel organizationId={organizationId} />
-    </div>
-  );
-}
-
-function MemberRow({
-  member,
-  organizationId,
-}: {
-  member: OrganizationMember;
-  organizationId: string | undefined;
-}) {
-  const deleteMutation = useDeleteMember(organizationId);
-  const isOwner = member.role === 'OWNER';
-
-  function handleDelete() {
-    if (!window.confirm(`Remover ${member.user.name || member.user.email} da organizacao?`)) return;
-    deleteMutation.mutate(member.id);
-  }
-
-  return (
-    <div className="flex flex-col gap-3 bg-white px-3 py-3 dark:bg-zinc-900 sm:flex-row sm:items-center sm:justify-between">
-      <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-2">
-          <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
-            {member.user.name}
-          </p>
-          <span
-            className={cn(
-              'rounded-full px-2 py-0.5 text-[11px] font-medium',
-              isOwner
-                ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
-                : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300'
-            )}
-          >
-            {roleLabel[member.role]}
-          </span>
-        </div>
-        <p className="mt-1 truncate text-xs text-zinc-500 dark:text-zinc-400">
-          {member.user.email}
-        </p>
-      </div>
-
-      <Button
-        type="button"
-        variant="ghost"
-        className="self-start text-xs text-red-700 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-950/40 sm:self-center"
-        disabled={isOwner || deleteMutation.isPending}
-        onClick={handleDelete}
-      >
-        {isOwner ? 'Protegido' : deleteMutation.isPending ? 'Removendo...' : 'Remover'}
-      </Button>
-    </div>
-  );
-}
-
-function CreateMemberPanel({ organizationId }: { organizationId: string | undefined }) {
-  const createMutation = useCreateMember();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState('12345678');
   const [role, setRole] = useState<OrganizationMemberRole>('MEMBER');
-  const [error, setError] = useState<string | null>(null);
-  const [createdEmail, setCreatedEmail] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<string | null>(null);
 
-  function handleSubmit(event: FormEvent) {
+  const membersQuery = useMembers(organizationId, isAdmin);
+  const createMemberMutation = useCreateMember();
+  const deleteMemberMutation = useDeleteMember(organizationId);
+
+  const members = membersQuery.data ?? [];
+
+  async function handleCreateMember(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!organizationId) return;
 
-    const cleanName = name.trim();
-    const cleanEmail = email.trim().toLowerCase();
-
-    if (!cleanName) {
-      setError('Informe o nome.');
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
-      setError('Informe um e-mail valido.');
-      return;
-    }
-    if (password.length < 8) {
-      setError('A senha precisa ter pelo menos 8 caracteres.');
+    if (!organizationId) {
+      setFeedback('Organizacao ativa nao encontrada.');
       return;
     }
 
-    setError(null);
-    createMutation.mutate(
-      {
+    if (!name.trim() || !email.trim() || !password.trim()) {
+      setFeedback('Preencha nome, e-mail e senha.');
+      return;
+    }
+
+    try {
+      setFeedback(null);
+
+      await createMemberMutation.mutateAsync({
         organizationId,
-        name: cleanName,
-        email: cleanEmail,
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
         password,
         role,
-      },
-      {
-        onSuccess: () => {
-          setCreatedEmail(cleanEmail);
-          setName('');
-          setEmail('');
-          setPassword('');
-          setRole('MEMBER');
-        },
-        onError: (err: unknown) => {
-          setCreatedEmail(null);
-          setError(formatApiError(err));
-        },
-      }
+      });
+
+      setName('');
+      setEmail('');
+      setPassword('12345678');
+      setRole('MEMBER');
+      setFeedback('Membro criado com sucesso.');
+    } catch (error) {
+      setFeedback(formatApiError(error));
+    }
+  }
+
+  async function handleDeleteMember(member: OrganizationMember) {
+    const confirmed = window.confirm(
+      `Remover ${member.user.name || member.user.email} da organizacao?`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setFeedback(null);
+      await deleteMemberMutation.mutateAsync(member.id);
+      setFeedback('Membro removido com sucesso.');
+    } catch (error) {
+      setFeedback(formatApiError(error));
+    }
+  }
+
+  if (!isAdmin) {
+    return (
+      <main className="mx-auto max-w-5xl px-4 py-8 lg:px-8">
+        <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-zinc-400">
+            Acesso restrito
+          </p>
+
+          <h1 className="mt-3 text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-100">
+            Area exclusiva para administradores
+          </h1>
+
+          <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+            Apenas usuarios com perfil Admin podem acessar o gerenciamento de membros.
+          </p>
+        </section>
+      </main>
     );
   }
 
   return (
-    <Card className="space-y-4">
-      <div>
-        <p className="text-xs font-medium uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
-          Novo acesso
-        </p>
-        <h2 className="mt-1 text-base font-medium tracking-tight text-zinc-900 dark:text-zinc-100">
-          Cadastrar usuario
-        </h2>
-      </div>
+    <main className="mx-auto max-w-5xl px-4 py-8 lg:px-8">
+      <section className="mb-6 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-zinc-400">
+              Administracao
+            </p>
 
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <div className="space-y-1.5">
-          <Label htmlFor="member-name">Nome</Label>
-          <Input
-            id="member-name"
-            value={name}
-            onChange={(event) => {
-              setName(event.target.value);
-              setCreatedEmail(null);
-            }}
-            maxLength={200}
-          />
+            <h1 className="mt-3 text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-100">
+              Membros da organizacao
+            </h1>
+
+            <p className="mt-2 max-w-2xl text-sm text-zinc-500 dark:text-zinc-400">
+              Gerencie as pessoas que terao acesso ao CRM AI nesta organizacao.
+            </p>
+          </div>
+
+          <span className="inline-flex w-fit rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-medium text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+            Perfil Admin
+          </span>
         </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="member-email">E-mail</Label>
-          <Input
-            id="member-email"
-            type="email"
-            value={email}
-            onChange={(event) => {
-              setEmail(event.target.value);
-              setCreatedEmail(null);
-            }}
-            maxLength={320}
-          />
+        {feedback ? (
+          <div className="mt-4 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+            {feedback}
+          </div>
+        ) : null}
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-[1fr_0.8fr]">
+        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold text-zinc-950 dark:text-zinc-100">
+                Funcionarios
+              </h2>
+
+              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+                Lista de usuarios vinculados a organizacao atual.
+              </p>
+            </div>
+
+            <span className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+              {members.length} membro(s)
+            </span>
+          </div>
+
+          {membersQuery.isPending ? (
+            <div className="mt-6 rounded-xl border border-dashed border-zinc-300 bg-zinc-50 p-6 text-center dark:border-zinc-700 dark:bg-zinc-900">
+              <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
+                Carregando membros...
+              </p>
+            </div>
+          ) : null}
+
+          {membersQuery.isError ? (
+            <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-6 text-center text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300">
+              Nao foi possivel carregar os membros.
+            </div>
+          ) : null}
+
+          {!membersQuery.isPending && !membersQuery.isError && members.length === 0 ? (
+            <div className="mt-6 rounded-xl border border-dashed border-zinc-300 bg-zinc-50 p-6 text-center dark:border-zinc-700 dark:bg-zinc-900">
+              <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
+                Nenhum membro encontrado
+              </p>
+
+              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                Adicione um funcionario usando o formulario ao lado.
+              </p>
+            </div>
+          ) : null}
+
+          {members.length > 0 ? (
+            <div className="mt-6 overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
+              <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                {members.map((member) => {
+                  const isOwner = member.role === 'OWNER';
+
+                  return (
+                    <div
+                      key={member.id}
+                      className="flex flex-col gap-3 bg-white p-4 dark:bg-zinc-950 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="truncate text-sm font-medium text-zinc-950 dark:text-zinc-100">
+                            {member.user.name}
+                          </p>
+
+                          <span
+                            className={cn(
+                              'rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide',
+                              isOwner
+                                ? 'border-zinc-300 bg-zinc-100 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200'
+                                : 'border-zinc-200 bg-white text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400'
+                            )}
+                          >
+                            {roleLabel[member.role]}
+                          </span>
+                        </div>
+
+                        <p className="mt-1 truncate text-xs text-zinc-500 dark:text-zinc-400">
+                          {member.user.email}
+                        </p>
+                      </div>
+
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={isOwner || deleteMemberMutation.isPending}
+                        onClick={() => handleDeleteMember(member)}
+                        className="h-8 rounded-lg text-xs"
+                      >
+                        {isOwner ? 'Protegido' : 'Remover'}
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
         </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="member-password">Senha temporaria</Label>
-          <Input
-            id="member-password"
-            type="password"
-            value={password}
-            onChange={(event) => {
-              setPassword(event.target.value);
-              setCreatedEmail(null);
-            }}
-            maxLength={128}
-          />
-        </div>
+        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+          <h2 className="text-lg font-semibold text-zinc-950 dark:text-zinc-100">Novo membro</h2>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="member-role">Perfil</Label>
-          <select
-            id="member-role"
-            value={role}
-            onChange={(event) =>
-              setRole(event.target.value === 'OWNER' ? 'OWNER' : 'MEMBER')
-            }
-            className="flex h-9 w-full rounded-md border border-zinc-200 bg-white px-3 py-1 text-sm text-zinc-900 shadow-sm outline-none transition-colors focus-visible:border-zinc-400 focus-visible:ring-2 focus-visible:ring-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:focus-visible:border-zinc-600 dark:focus-visible:ring-zinc-700"
-          >
-            <option value="MEMBER">Membro</option>
-            <option value="OWNER">Admin</option>
-          </select>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-          <p className="text-xs">
-            {error ? (
-              <span className="text-red-700 dark:text-red-300">{error}</span>
-            ) : createdEmail ? (
-              <span className="text-emerald-700 dark:text-emerald-300">
-                Usuario {createdEmail} criado.
-              </span>
-            ) : null}
+          <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+            Crie uma conta vinculada a organizacao atual.
           </p>
-          <Button type="submit" disabled={createMutation.isPending}>
-            {createMutation.isPending ? 'Criando...' : 'Criar usuario'}
-          </Button>
+
+          <form className="mt-6 space-y-3" onSubmit={handleCreateMember}>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-zinc-600 dark:text-zinc-300">
+                Nome
+              </label>
+
+              <input
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                placeholder="Nome do funcionario"
+                className="h-10 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none transition focus:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-medium text-zinc-600 dark:text-zinc-300">
+                E-mail
+              </label>
+
+              <input
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="funcionario@empresa.com"
+                type="email"
+                className="h-10 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none transition focus:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-medium text-zinc-600 dark:text-zinc-300">
+                Senha temporaria
+              </label>
+
+              <input
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="Senha temporaria"
+                type="text"
+                className="h-10 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none transition focus:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-medium text-zinc-600 dark:text-zinc-300">
+                Perfil
+              </label>
+
+              <select
+                value={role}
+                onChange={(event) =>
+                  setRole(event.target.value === 'OWNER' ? 'OWNER' : 'MEMBER')
+                }
+                className="h-10 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none transition focus:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+              >
+                <option value="MEMBER">Funcionario</option>
+                <option value="OWNER">Admin</option>
+              </select>
+            </div>
+
+            <Button
+              type="submit"
+              disabled={createMemberMutation.isPending}
+              className="h-10 w-full rounded-xl"
+            >
+              {createMemberMutation.isPending ? 'Adicionando...' : 'Adicionar membro'}
+            </Button>
+          </form>
+
+          <p className="mt-4 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+            A pessoa podera acessar pelo login normal usando o e-mail e a senha temporaria.
+          </p>
         </div>
-      </form>
-    </Card>
+      </section>
+    </main>
   );
 }
