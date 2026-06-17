@@ -17,41 +17,57 @@ type ProductsSettingsPanelProps = {
   isOwner: boolean;
 };
 
-function parsePrice(value: string): number | null {
-  const normalized = value.trim().replace(/\./g, '').replace(',', '.');
-  const parsed = Number(normalized);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+const currencyFormatter = new Intl.NumberFormat('pt-BR', {
+  style: 'currency',
+  currency: 'BRL',
+});
+
+function onlyDigits(value: string): string {
+  return value.replace(/\D/g, '').slice(0, 11);
+}
+
+function centsToNumber(value: string): number | null {
+  const cents = Number(value);
+  if (!Number.isFinite(cents) || cents <= 0) return null;
+  return cents / 100;
+}
+
+function formatCurrencyFromDigits(value: string): string {
+  if (!value) return '';
+  return currencyFormatter.format(Number(value) / 100);
+}
+
+function digitsFromDecimal(value: string): string {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return '';
+  return String(Math.round(parsed * 100));
 }
 
 function formatPrice(value: string): string {
   const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return `R$ ${value}`;
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format(parsed);
+  if (!Number.isFinite(parsed)) return value;
+  return currencyFormatter.format(parsed);
 }
 
 export function ProductsSettingsPanel({ organizationId, isOwner }: ProductsSettingsPanelProps) {
   const productsQuery = useProducts(organizationId);
   const createMutation = useCreateProduct();
   const [name, setName] = useState('');
-  const [price, setPrice] = useState('');
-  const [description, setDescription] = useState('');
+  const [priceDigits, setPriceDigits] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  function handleCreate(e: FormEvent) {
-    e.preventDefault();
+  function handleCreate(event: FormEvent) {
+    event.preventDefault();
     if (!organizationId || !isOwner) return;
 
     const cleanName = name.trim();
-    const parsedPrice = parsePrice(price);
+    const price = centsToNumber(priceDigits);
     if (!cleanName) {
       setError('Informe o nome do produto.');
       return;
     }
-    if (!parsedPrice) {
-      setError('Informe um valor valido.');
+    if (!price) {
+      setError('Informe um valor válido.');
       return;
     }
 
@@ -60,14 +76,12 @@ export function ProductsSettingsPanel({ organizationId, isOwner }: ProductsSetti
       {
         organizationId,
         name: cleanName,
-        description: description.trim() || undefined,
-        price: parsedPrice,
+        price,
       },
       {
         onSuccess: () => {
           setName('');
-          setPrice('');
-          setDescription('');
+          setPriceDigits('');
         },
         onError: (err: unknown) => setError(formatApiError(err)),
       }
@@ -75,7 +89,7 @@ export function ProductsSettingsPanel({ organizationId, isOwner }: ProductsSetti
   }
 
   return (
-    <Card className="space-y-4 lg:col-span-2">
+    <Card className="space-y-4">
       <div className="space-y-0.5">
         <h2 className="text-xs font-medium uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
           Produtos
@@ -86,37 +100,33 @@ export function ProductsSettingsPanel({ organizationId, isOwner }: ProductsSetti
       </div>
 
       {organizationId && isOwner ? (
-        <form onSubmit={handleCreate} className="space-y-3 rounded-md border border-zinc-100 p-3 dark:border-zinc-800">
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_120px]">
+        <form
+          onSubmit={handleCreate}
+          className="space-y-3 rounded-lg border border-zinc-100 bg-zinc-50/70 p-3 dark:border-zinc-800 dark:bg-zinc-900/50"
+        >
+          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_150px]">
             <div className="space-y-1.5">
               <Label htmlFor="product-name">Nome</Label>
               <Input
                 id="product-name"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
-                maxLength={160}
+                onChange={(event) => setName(event.target.value)}
+                maxLength={80}
+                placeholder="Ex: Mentoria"
               />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="product-price">Valor</Label>
               <Input
                 id="product-price"
-                inputMode="decimal"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                placeholder="497,00"
+                inputMode="numeric"
+                value={formatCurrencyFromDigits(priceDigits)}
+                onChange={(event) => setPriceDigits(onlyDigits(event.target.value))}
+                placeholder="R$ 0,00"
               />
             </div>
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="product-description">Descricao</Label>
-            <Input
-              id="product-description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              maxLength={500}
-            />
-          </div>
+
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-xs text-red-700 dark:text-red-300">{error}</p>
             <Button type="submit" disabled={createMutation.isPending}>
@@ -165,19 +175,18 @@ function ProductRow({
   const deleteMutation = useDeleteProduct(organizationId);
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(product.name);
-  const [price, setPrice] = useState(product.price.replace('.', ','));
-  const [description, setDescription] = useState(product.description ?? '');
+  const [priceDigits, setPriceDigits] = useState(digitsFromDecimal(product.price));
   const [error, setError] = useState<string | null>(null);
 
   function handleSave() {
     const cleanName = name.trim();
-    const parsedPrice = parsePrice(price);
+    const price = centsToNumber(priceDigits);
     if (!cleanName) {
       setError('Informe o nome.');
       return;
     }
-    if (!parsedPrice) {
-      setError('Informe um valor valido.');
+    if (!price) {
+      setError('Informe um valor válido.');
       return;
     }
 
@@ -187,8 +196,8 @@ function ProductRow({
         productId: product.id,
         input: {
           name: cleanName,
-          price: parsedPrice,
-          description: description.trim() || null,
+          price,
+          description: null,
         },
       },
       {
@@ -211,37 +220,42 @@ function ProductRow({
   }
 
   return (
-    <div className="rounded-md border border-zinc-100 px-3 py-3 dark:border-zinc-800">
+    <div className="rounded-lg border border-zinc-100 px-3 py-3 dark:border-zinc-800">
       {editing ? (
         <div className="space-y-3">
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_120px]">
-            <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={160} />
+          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_150px]">
+            <Input value={name} onChange={(event) => setName(event.target.value)} maxLength={80} />
             <Input
-              inputMode="decimal"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
+              inputMode="numeric"
+              value={formatCurrencyFromDigits(priceDigits)}
+              onChange={(event) => setPriceDigits(onlyDigits(event.target.value))}
+              placeholder="R$ 0,00"
             />
           </div>
-          <Input
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            maxLength={500}
-            placeholder="Descricao"
-          />
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs text-red-700 dark:text-red-300">{error}</p>
             <div className="flex flex-wrap gap-2">
-              <Button type="button" className="text-xs" onClick={handleSave} disabled={updateMutation.isPending}>
+              <Button
+                type="button"
+                className="text-xs"
+                onClick={handleSave}
+                disabled={updateMutation.isPending}
+              >
                 {updateMutation.isPending ? 'Salvando...' : 'Salvar'}
               </Button>
-              <Button type="button" variant="ghost" className="text-xs" onClick={() => setEditing(false)}>
+              <Button
+                type="button"
+                variant="ghost"
+                className="text-xs"
+                onClick={() => setEditing(false)}
+              >
                 Cancelar
               </Button>
             </div>
           </div>
         </div>
       ) : (
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
@@ -254,18 +268,23 @@ function ProductRow({
             <p className="mt-1 text-sm text-zinc-700 dark:text-zinc-300">
               {formatPrice(product.price)}
             </p>
-            {product.description ? (
-              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                {product.description}
-              </p>
-            ) : null}
           </div>
           {editable ? (
             <div className="flex shrink-0 flex-wrap gap-1">
-              <Button type="button" variant="ghost" className="text-xs" onClick={() => setEditing(true)}>
+              <Button
+                type="button"
+                variant="ghost"
+                className="text-xs"
+                onClick={() => setEditing(true)}
+              >
                 Editar
               </Button>
-              <Button type="button" variant="ghost" className="text-xs" onClick={handleToggleActive}>
+              <Button
+                type="button"
+                variant="ghost"
+                className="text-xs"
+                onClick={handleToggleActive}
+              >
                 {product.active ? 'Pausar' : 'Ativar'}
               </Button>
               <Button

@@ -54,6 +54,8 @@ const ptBR: Dictionary = {
   'board.column_name_field': 'Nome da coluna',
   'board.new_column': 'Nova coluna',
   'board.cannot_delete_only': 'Não é possível excluir a única coluna.',
+  'board.column_limit_hint': 'O pipeline deve ter no máximo 6 etapas.',
+  'board.column_minimum_hint': 'O pipeline deve manter pelo menos 5 etapas.',
   'board.confirm_delete_with_cards':
     'Esta coluna tem {count} negócio(s). Mover para "{target}" e excluir?',
   'board.drag_card_aria': 'Arrastar {title}',
@@ -226,6 +228,8 @@ const en: Dictionary = {
   'board.column_name_field': 'Column name',
   'board.new_column': 'New column',
   'board.cannot_delete_only': 'Cannot delete the only column.',
+  'board.column_limit_hint': 'The pipeline can have at most 6 stages.',
+  'board.column_minimum_hint': 'The pipeline must keep at least 5 stages.',
   'board.confirm_delete_with_cards':
     'This column has {count} deal(s). Move them to "{target}" and delete?',
   'board.drag_card_aria': 'Drag {title}',

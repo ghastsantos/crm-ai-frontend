@@ -47,7 +47,7 @@ export function AuthLayout({ title, description, children, footer, visual }: Aut
                 </h2>
 
                 <p className="mt-4 text-sm leading-6 text-zinc-500">
-                  Acesse seu espaco de trabalho com uma experiencia simples, clara e elegante.
+                  Acesse seu espaço de trabalho com uma experiência simples, clara e elegante.
                 </p>
               </div>
             </div>

@@ -12,6 +12,12 @@ export function useWhatsAppIntegration() {
   return useQuery({
     queryKey: ['whatsapp-integration'],
     queryFn: fetchWhatsAppIntegration,
+    refetchInterval: (query) => {
+      const integration = query.state.data;
+      if (!integration) return false;
+      if (!integration.organizationId) return false;
+      return integration.status === 'CONNECTED' ? false : 3000;
+    },
   });
 }
 
@@ -32,7 +38,8 @@ export function useConnectWhatsAppIntegration() {
 
   return useMutation({
     mutationFn: connectWhatsAppIntegration,
-    onSuccess: () => {
+    onSuccess: (integration) => {
+      queryClient.setQueryData(['whatsapp-integration'], integration);
       void queryClient.invalidateQueries({ queryKey: ['whatsapp-integration'] });
     },
   });

@@ -18,14 +18,14 @@ export function AppHeader() {
   const { active } = useActiveOrganization();
   const { t } = useLocale();
   const isAdmin = active?.isOwner === true;
-  const roleLabel = active ? (isAdmin ? 'Admin' : 'Usuario') : '';
+  const roleLabel = active ? (isAdmin ? 'Admin' : 'Usuário') : '';
 
   async function handleLogout() {
     if (env.VITE_AUTH_HTTPONLY_COOKIE) {
       try {
         await logoutRequest();
       } catch {
-        /* servidor indisponivel: limpar sessao local da mesma forma */
+        /* servidor indisponível: limpar sessão local da mesma forma */
       }
     }
 
@@ -39,7 +39,7 @@ export function AppHeader() {
   if (isPending) {
     label = 'Carregando...';
   } else if (isError) {
-    label = 'Perfil indisponivel';
+    label = 'Perfil indisponível';
   } else if (data) {
     label = data.name.trim() || data.email;
   } else {
@@ -93,8 +93,8 @@ export function AppHeader() {
                       'border-zinc-200 bg-zinc-50 text-zinc-950 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100'
                   )
                 }
-                aria-label="Acessar membros da organizacao"
-                title="Acessar membros da organizacao"
+                aria-label="Acessar membros da organização"
+                title="Acessar membros da organização"
               >
                 Membros
               </NavLink>

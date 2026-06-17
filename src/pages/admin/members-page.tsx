@@ -8,7 +8,7 @@ import { Button } from '@/shared/ui/button';
 
 const roleLabel: Record<OrganizationMemberRole, string> = {
   OWNER: 'Admin',
-  MEMBER: 'Funcionario',
+  MEMBER: 'Funcionário',
 };
 
 export function MembersPage() {
@@ -32,7 +32,7 @@ export function MembersPage() {
     event.preventDefault();
 
     if (!organizationId) {
-      setFeedback('Organizacao ativa nao encontrada.');
+      setFeedback('Organização ativa não encontrada.');
       return;
     }
 
@@ -64,7 +64,7 @@ export function MembersPage() {
 
   async function handleDeleteMember(member: OrganizationMember) {
     const confirmed = window.confirm(
-      `Remover ${member.user.name || member.user.email} da organizacao?`
+      `Remover ${member.user.name || member.user.email} da organização?`
     );
 
     if (!confirmed) return;
@@ -87,11 +87,11 @@ export function MembersPage() {
           </p>
 
           <h1 className="mt-3 text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-100">
-            Area exclusiva para administradores
+            Área exclusiva para administradores
           </h1>
 
           <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-            Apenas usuarios com perfil Admin podem acessar o gerenciamento de membros.
+            Apenas usuários com perfil Admin podem acessar o gerenciamento de membros.
           </p>
         </section>
       </main>
@@ -104,15 +104,15 @@ export function MembersPage() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-zinc-400">
-              Administracao
+              Administração
             </p>
 
             <h1 className="mt-3 text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-100">
-              Membros da organizacao
+              Membros da organização
             </h1>
 
             <p className="mt-2 max-w-2xl text-sm text-zinc-500 dark:text-zinc-400">
-              Gerencie as pessoas que terao acesso ao CRM AI nesta organizacao.
+              Gerencie as pessoas que terão acesso ao CRM AI nesta organização.
             </p>
           </div>
 
@@ -133,11 +133,11 @@ export function MembersPage() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <h2 className="text-lg font-semibold text-zinc-950 dark:text-zinc-100">
-                Funcionarios
+                Funcionários
               </h2>
 
               <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-                Lista de usuarios vinculados a organizacao atual.
+                Lista de usuários vinculados à organização atual.
               </p>
             </div>
 
@@ -156,7 +156,7 @@ export function MembersPage() {
 
           {membersQuery.isError ? (
             <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-6 text-center text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300">
-              Nao foi possivel carregar os membros.
+              Não foi possível carregar os membros.
             </div>
           ) : null}
 
@@ -167,7 +167,7 @@ export function MembersPage() {
               </p>
 
               <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                Adicione um funcionario usando o formulario ao lado.
+                Adicione um funcionário usando o formulário ao lado.
               </p>
             </div>
           ) : null}
@@ -227,7 +227,7 @@ export function MembersPage() {
           <h2 className="text-lg font-semibold text-zinc-950 dark:text-zinc-100">Novo membro</h2>
 
           <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-            Crie uma conta vinculada a organizacao atual.
+            Crie uma conta vinculada à organização atual.
           </p>
 
           <form className="mt-6 space-y-3" onSubmit={handleCreateMember}>
@@ -239,7 +239,7 @@ export function MembersPage() {
               <input
                 value={name}
                 onChange={(event) => setName(event.target.value)}
-                placeholder="Nome do funcionario"
+                placeholder="Nome do funcionário"
                 className="h-10 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none transition focus:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
               />
             </div>
@@ -260,13 +260,13 @@ export function MembersPage() {
 
             <div>
               <label className="mb-1 block text-xs font-medium text-zinc-600 dark:text-zinc-300">
-                Senha temporaria
+                Senha temporária
               </label>
 
               <input
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                placeholder="Senha temporaria"
+                placeholder="Senha temporária"
                 type="text"
                 className="h-10 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none transition focus:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
               />
@@ -284,7 +284,7 @@ export function MembersPage() {
                 }
                 className="h-10 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none transition focus:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
               >
-                <option value="MEMBER">Funcionario</option>
+                <option value="MEMBER">Funcionário</option>
                 <option value="OWNER">Admin</option>
               </select>
             </div>
@@ -299,7 +299,7 @@ export function MembersPage() {
           </form>
 
           <p className="mt-4 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
-            A pessoa podera acessar pelo login normal usando o e-mail e a senha temporaria.
+            A pessoa poderá acessar pelo login normal usando o e-mail e a senha temporária.
           </p>
         </div>
       </section>

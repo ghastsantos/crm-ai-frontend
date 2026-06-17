@@ -16,18 +16,18 @@ type WhatsAppPanelProps = {
 };
 
 const statusLabel: Record<WhatsAppConnectionStatus, string> = {
-  NOT_CONFIGURED: 'Nao configurado',
-  CONNECTING: 'Aguardando conexao',
+  NOT_CONFIGURED: 'Não configurado',
+  CONNECTING: 'Aguardando conexão',
   CONNECTED: 'Conectado',
   DISCONNECTED: 'Desconectado',
 };
 
 const stageLabel: Record<WhatsAppStage, string> = {
   LEAD: 'Lead',
-  QUALIFICACAO: 'Qualificacao',
-  EM_NEGOCIACAO: 'Em negociacao',
+  QUALIFICACAO: 'Qualificação',
+  EM_NEGOCIACAO: 'Em negociação',
   FECHAMENTO: 'Fechamento',
-  NAO_FECHOU: 'Nao fechou',
+  NAO_FECHOU: 'Não fechou',
 };
 
 function qrSource(value: string | null): string | null {
@@ -61,7 +61,7 @@ export function WhatsAppPanel({ organizationId, organizationName, isOwner }: Wha
             WhatsApp conectado ao CRM
           </p>
           <h2 className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-            Atendimento automatico para {organizationName}
+            Atendimento automático para {organizationName}
           </h2>
           <p className="max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">
             O bot recebe mensagens reais pelo WhatsApp Web, responde o cliente e atualiza cards no
@@ -80,8 +80,8 @@ export function WhatsAppPanel({ organizationId, organizationName, isOwner }: Wha
       <div className={showQrBox ? 'grid gap-4 lg:grid-cols-[minmax(0,1fr)_240px]' : 'grid gap-4'}>
         <div className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2">
-            <Info label="Organizacao" value={integration?.organization?.name ?? 'Nao vinculada'} />
-            <Info label="Numero" value={integration?.connectedPhone ?? 'Aguardando'} />
+            <Info label="Organização" value={integration?.organization?.name ?? 'Não vinculada'} />
+            <Info label="Número" value={integration?.connectedPhone ?? 'Aguardando'} />
           </div>
 
           {showSetupButton || showConnectButton ? (
@@ -92,7 +92,7 @@ export function WhatsAppPanel({ organizationId, organizationName, isOwner }: Wha
                   disabled={!canSetup}
                   onClick={() => setupMutation.mutate(organizationId)}
                 >
-                  {setupMutation.isPending ? 'Configurando...' : 'Vincular esta organizacao'}
+                  {setupMutation.isPending ? 'Configurando...' : 'Vincular esta organização'}
                 </Button>
               ) : null}
               {showConnectButton ? (
@@ -102,7 +102,7 @@ export function WhatsAppPanel({ organizationId, organizationName, isOwner }: Wha
                   disabled={!canConnect}
                   onClick={() => connectMutation.mutate()}
                 >
-                  {connectMutation.isPending ? 'Gerando conexao...' : 'Gerar QR code'}
+                  {connectMutation.isPending ? 'Gerando conexão...' : 'Gerar QR code'}
                 </Button>
               ) : null}
             </div>
@@ -110,15 +110,15 @@ export function WhatsAppPanel({ organizationId, organizationName, isOwner }: Wha
 
           {!isOwner ? (
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Apenas administradores podem conectar ou trocar o numero do WhatsApp.
+              Apenas administradores podem conectar ou trocar o número do WhatsApp.
             </p>
           ) : linkedToAnotherOrg ? (
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Ja existe um numero de WhatsApp vinculado a outra organizacao.
+              Já existe um número de WhatsApp vinculado a outra organização.
             </p>
           ) : connectedToThisOrg ? (
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Esta organizacao ja esta pronta para receber mensagens do WhatsApp.
+              Esta organização já está pronta para receber mensagens do WhatsApp.
             </p>
           ) : null}
         </div>
@@ -138,7 +138,7 @@ export function WhatsAppPanel({ organizationId, organizationName, isOwner }: Wha
             )}
             {integration?.pairingCode ? (
               <p className="mt-2 text-center text-xs font-medium text-zinc-700 dark:text-zinc-200">
-                Codigo: {integration.pairingCode}
+                Código: {integration.pairingCode}
               </p>
             ) : null}
           </div>
@@ -184,7 +184,7 @@ export function WhatsAppPanel({ organizationId, organizationName, isOwner }: Wha
           </div>
         ) : (
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Nenhuma conversa recebida pela integracao ainda.
+            Nenhuma conversa recebida pela integração ainda.
           </p>
         )}
       </div>

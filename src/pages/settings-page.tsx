@@ -24,7 +24,7 @@ export function SettingsPage() {
   const { t } = useLocale();
 
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-8">
+    <div className="mx-auto w-full max-w-5xl space-y-8">
       <div className="flex items-center gap-3">
         <Link
           to="/"
@@ -43,7 +43,7 @@ export function SettingsPage() {
         </h1>
       </div>
 
-      <div className="mx-auto grid w-full max-w-3xl auto-rows-min items-stretch gap-4 lg:grid-cols-2">
+      <div className="mx-auto grid w-full max-w-5xl auto-rows-min items-stretch gap-4 lg:grid-cols-2">
         <AppearanceSection />
         <LocaleSection />
         <ProfileSection />

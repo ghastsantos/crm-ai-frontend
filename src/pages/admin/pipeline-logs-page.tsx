@@ -146,13 +146,13 @@ function getActionDetails(log: PipelineLog) {
 function exportLogsToCsv(logs: PipelineLog[]) {
   const headers = [
     'Data e hora',
-    'Usuario',
+    'Usuário',
     'Email',
-    'Negociacao',
-    'Acao',
+    'Negociação',
+    'Ação',
     'Detalhes',
-    'Organizacao',
-    'Descricao',
+    'Organização',
+    'Descrição',
   ];
 
   const rows = logs.map((log) => [
