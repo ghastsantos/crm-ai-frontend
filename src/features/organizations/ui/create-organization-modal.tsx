@@ -20,11 +20,13 @@ export function CreateOrganizationModal({
 }: CreateOrganizationModalProps) {
   const { t } = useLocale();
   const [name, setName] = useState('');
+  const [niche, setNiche] = useState('');
   const [error, setError] = useState<string | null>(null);
   const mutation = useCreateOrganization();
 
   function reset() {
     setName('');
+    setNiche('');
     setError(null);
   }
 
@@ -41,9 +43,14 @@ export function CreateOrganizationModal({
       setError(t('organizations.create.required'));
       return;
     }
+    const trimmedNiche = niche.trim();
+    if (trimmedNiche.length < 1) {
+      setError(t('organizations.create.niche_required'));
+      return;
+    }
     setError(null);
     mutation.mutate(
-      { name: trimmed },
+      { name: trimmed, niche: trimmedNiche },
       {
         onSuccess: (org) => {
           onCreated?.(org.id);
@@ -85,6 +92,16 @@ export function CreateOrganizationModal({
             placeholder={t('organizations.create.placeholder')}
             autoFocus
             maxLength={200}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="create-org-niche">{t('organizations.create.niche_field')}</Label>
+          <Input
+            id="create-org-niche"
+            value={niche}
+            onChange={(e) => setNiche(e.target.value)}
+            placeholder={t('organizations.create.niche_placeholder')}
+            maxLength={120}
           />
         </div>
         <div className="flex justify-end gap-2">

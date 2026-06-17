@@ -257,9 +257,7 @@ export function PipelineLogsPage() {
           </p>
 
           {logsQuery.isError ? (
-            <p className="mt-2 text-xs text-red-500 dark:text-red-300">
-              Erro ao buscar logs.
-            </p>
+            <p className="mt-2 text-xs text-red-500 dark:text-red-300">Erro ao buscar logs.</p>
           ) : null}
         </div>
 

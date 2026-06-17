@@ -11,6 +11,7 @@ export type MembershipSummary = {
   role: string;
   organizationId: string;
   organizationName: string;
+  organizationNiche: string;
 };
 
 export type UserWithMemberships = PublicUser & {

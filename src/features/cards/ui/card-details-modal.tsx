@@ -14,7 +14,7 @@ import { editCardFormSchema } from '../model/schemas';
 import { formatCurrency } from '../lib/format-currency';
 
 const TITLE_MAX = 200;
-const NOTES_MAX = 500;
+const NOTES_MAX = 2000;
 
 type CardDetailsModalProps = {
   card: Card;
@@ -218,13 +218,11 @@ export function CardDetailsModal({
           </form>
         ) : (
           <>
-            <span className="inline-flex w-fit items-center rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-              {columnTitle}
-            </span>
             {card.email ? <Field label={t('card.email')} value={card.email} /> : null}
             {card.phone ? <Field label={t('card.phone')} value={card.phone} /> : null}
             <Field label={t('card.value')} value={formatCurrency(card.value)} />
             {card.notes ? <Field label={t('card.notes')} value={card.notes} /> : null}
+            <Field label={t('card.created_at')} value={formatUpdatedAt(card.createdAt, locale)} />
             <Field label={t('card.updated_at')} value={formatUpdatedAt(card.updatedAt, locale)} />
             <div className="flex flex-wrap gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
               <Button

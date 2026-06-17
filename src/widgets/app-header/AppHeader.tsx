@@ -4,6 +4,7 @@ import { logoutRequest } from '@/features/auth/api/auth-api';
 import { useCurrentUser } from '@/features/auth/hooks/use-current-user';
 import { useSession } from '@/features/auth/hooks/use-session';
 import { useLocale } from '@/features/locale/hooks/use-locale';
+import { useActiveOrganization } from '@/features/organizations/hooks/use-active-organization';
 import { OrganizationSwitcher } from '@/features/organizations/ui/organization-switcher';
 import { env } from '@/shared/config/env';
 import { cn } from '@/shared/lib/cn';
@@ -14,7 +15,9 @@ export function AppHeader() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { data, isPending, isError } = useCurrentUser();
+  const { active } = useActiveOrganization();
   const { t } = useLocale();
+  const isAdmin = active?.isOwner === true;
 
   async function handleLogout() {
     if (env.VITE_AUTH_HTTPONLY_COOKIE) {
@@ -44,12 +47,42 @@ export function AppHeader() {
     <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4 lg:max-w-[1600px] lg:px-8">
         <div className="flex min-w-0 items-center gap-3">
-          <span className="text-xs font-medium uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+          <NavLink
+            to="/"
+            aria-label="Ir para o inicio"
+            className="text-xs font-medium uppercase tracking-widest text-zinc-400 transition-colors hover:text-zinc-900 dark:text-zinc-500 dark:hover:text-zinc-100"
+          >
             {t('app.brand')}
-          </span>
+          </NavLink>
           <OrganizationSwitcher />
         </div>
         <div className="flex items-center gap-2 sm:gap-4">
+          {isAdmin ? (
+            <>
+              <NavLink
+                to="/admin/members"
+                className={({ isActive }) =>
+                  cn(
+                    'hidden h-8 items-center rounded-md px-2 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100 dark:focus-visible:ring-zinc-700 sm:inline-flex',
+                    isActive && 'bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100'
+                  )
+                }
+              >
+                Membros
+              </NavLink>
+              <NavLink
+                to="/admin/pipeline-logs"
+                className={({ isActive }) =>
+                  cn(
+                    'hidden h-8 items-center rounded-md px-2 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100 dark:focus-visible:ring-zinc-700 sm:inline-flex',
+                    isActive && 'bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100'
+                  )
+                }
+              >
+                Logs
+              </NavLink>
+            </>
+          ) : null}
           <NavLink
             to="/settings"
             className={({ isActive }) =>

@@ -1,61 +1,48 @@
-# CRM AI Frontend
+# CRM Frontend
 
-SPA em React 19 + Vite 8 + TypeScript, integrada ao **crm-ai-backend** (auth JWT em `Authorization: Bearer`).
+SPA em React, Vite, TypeScript, TanStack Query e Tailwind CSS.
 
-## Stack
+## O que tem
 
-- React Router, TanStack Query, Zod, Tailwind CSS v4 (`@tailwindcss/vite`)
-- Fonte: Inter Variable (`@fontsource-variable/inter`)
-- UI monocromática (zinc), estilo minimalista / white-label
+- Login e cadastro
+- Visão do pipeline de negociações
+- Criação, edição, exclusão e movimentação de cards
+- Painel para conectar WhatsApp via Baileys/WhatsApp Web
+- Lista de conversas recentes atualizadas pela IA
+- Tela de configurações com perfil, senha, organização e usuários
+- Tema e idioma apenas na área autenticada
 
-## Início rápido
+## Rodar localmente
 
 ```bash
 npm install
 cp .env.example .env
-# Defina VITE_API_BASE_URL (ex.: http://localhost:3000)
 npm run dev
 ```
 
-### CORS no backend
+Configure `VITE_API_BASE_URL` apontando para o backend, por exemplo:
 
-O backend exige `CORS_ORIGINS` com a origem do Vite (ex.: `http://localhost:5173`). Sem isso, o navegador bloqueia as requisições.
+```env
+VITE_API_BASE_URL=http://localhost:3000
+```
+
+Se a porta estiver ocupada, o `npm run dev` pergunta outra porta no terminal. Para deixar uma porta fixa, defina `VITE_PORT` no `.env`.
 
 ## Scripts
 
 | Comando | Descrição |
-|--------|------------|
-| `npm run dev` | Desenvolvimento |
-| `npm run build` | Build de produção |
-| `npm run preview` | Preview do build |
-| `npm run lint` | ESLint |
+| --- | --- |
+| `npm run dev` | Inicia o Vite |
+| `npm run typecheck` | Valida TypeScript |
+| `npm run build` | Gera build de produção |
+| `npm run lint` | Roda ESLint |
 
 ## Rotas
 
 | Rota | Descrição |
-|------|------------|
-| `/login` | Entrar |
-| `/register` | Cadastro (usuário + organização) |
-| `/` | Overview (requer sessão; dados de `GET /api/v1/auth/me`) |
-
-O token JWT fica em `sessionStorage` após login ou cadastro.
-
-## Estrutura (resumo)
-
-```
-src/
-  app/           # Providers, router
-  entities/      # Tipos alinhados à API
-  features/auth/ # API auth, schemas Zod, formulários, sessão
-  pages/         # Composição das páginas
-  shared/        # Cliente HTTP, UI primitivos, utilitários
-  widgets/       # Header, shell autenticado
-```
-
-## Integração com a API
-
-- `POST /api/v1/auth/login` e `POST /api/v1/auth/register` — corpo alinhado ao backend; resposta `{ success, data: { token, user } }`.
-- `GET /api/v1/auth/me` — usuário e `memberships`.
-- Erros: `ApiError` com `code` (ex.: `EMAIL_ALREADY_IN_USE`, `INVALID_CREDENTIALS`).
-
-A seção **Pipeline** na home é placeholder até existirem endpoints de CRM (contacts/deals).
+| --- | --- |
+| `/login` | Login |
+| `/register` | Cadastro inicial |
+| `/` | Pipeline e atendimento WhatsApp |
+| `/settings` | Configurações |
+| `/admin/pipeline-logs` | Histórico do pipeline |

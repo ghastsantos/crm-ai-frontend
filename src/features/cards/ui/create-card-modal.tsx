@@ -47,7 +47,7 @@ const textareaClassName = cn(
 );
 
 const TITLE_MAX = 200;
-const NOTES_MAX = 500;
+const NOTES_MAX = 2000;
 
 export function CreateCardModal({
   open,

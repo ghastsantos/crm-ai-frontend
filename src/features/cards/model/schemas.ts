@@ -51,7 +51,7 @@ export const createCardFormSchema = z.object({
     .transform((v) => (v && v.length > 0 ? v : undefined))
     .pipe(z.string().email({ message: 'E-mail inválido' }).max(320).optional()),
   phone: phoneSchema,
-  notes: optionalTrimmed(500, 'Observações muito longas'),
+  notes: optionalTrimmed(2000, 'Observações muito longas'),
 });
 
 export type CreateCardFormValues = z.infer<typeof createCardFormSchema>;
@@ -69,7 +69,7 @@ export const editCardFormSchema = z.object({
     .transform((v) => (v && v.length > 0 ? v : undefined))
     .pipe(z.string().email({ message: 'E-mail inválido' }).max(320).optional()),
   phone: phoneSchema,
-  notes: optionalTrimmed(500, 'Observações muito longas'),
+  notes: optionalTrimmed(2000, 'Observações muito longas'),
 });
 
 export type EditCardFormValues = z.infer<typeof editCardFormSchema>;

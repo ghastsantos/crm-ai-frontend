@@ -10,6 +10,7 @@ import { CreateOrganizationModal } from '@/features/organizations/ui/create-orga
 import { DeleteOrganizationModal } from '@/features/organizations/ui/delete-organization-modal';
 import { RenameOrganizationModal } from '@/features/organizations/ui/rename-organization-modal';
 import { usePipelineColumns } from '@/features/pipeline-columns/hooks/use-pipeline-columns';
+import { ProductsSettingsPanel } from '@/features/products/ui/products-settings-panel';
 import { useTheme } from '@/features/theme/hooks/use-theme';
 import { type ThemePreference } from '@/features/theme/model/theme-context';
 import { cn } from '@/shared/lib/cn';
@@ -48,6 +49,7 @@ export function SettingsPage() {
         <ProfileSection />
         <SecuritySection />
         <WorkspaceSection />
+        <ProductsSection />
         <DangerZoneSection />
       </div>
     </div>
@@ -409,6 +411,17 @@ function WorkspaceSection() {
       ) : null}
       <CreateOrganizationModal open={createOpen} onClose={() => setCreateOpen(false)} />
     </Card>
+  );
+}
+
+function ProductsSection() {
+  const { active } = useActiveOrganization();
+
+  return (
+    <ProductsSettingsPanel
+      organizationId={active?.organizationId}
+      isOwner={Boolean(active?.isOwner)}
+    />
   );
 }
 

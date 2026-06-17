@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 
 type AuthLayoutProps = {
   title: string;
@@ -8,6 +8,27 @@ type AuthLayoutProps = {
 };
 
 export function AuthLayout({ title, description, children, footer }: AuthLayoutProps) {
+  useEffect(() => {
+    const root = document.documentElement;
+    const previousTheme = root.dataset.theme;
+    const previousLang = root.lang;
+    const hadDarkClass = root.classList.contains('dark');
+
+    root.classList.remove('dark');
+    root.dataset.theme = 'light';
+    root.lang = 'pt-BR';
+
+    return () => {
+      root.classList.toggle('dark', hadDarkClass);
+      if (previousTheme) {
+        root.dataset.theme = previousTheme;
+      } else {
+        delete root.dataset.theme;
+      }
+      root.lang = previousLang;
+    };
+  }, []);
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 px-4 py-12">
       <div className="w-full max-w-sm">
