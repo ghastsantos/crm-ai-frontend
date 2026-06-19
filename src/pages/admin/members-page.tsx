@@ -1,38 +1,32 @@
 import { type FormEvent, useState } from 'react';
-import type { OrganizationMember } from '@/entities/member/types';
+import type { OrganizationMember, OrganizationMemberRole } from '@/entities/member/types';
 import { useCreateMember, useDeleteMember, useMembers } from '@/features/members/hooks/use-members';
 import { useActiveOrganization } from '@/features/organizations/hooks/use-active-organization';
 import { cn } from '@/shared/lib/cn';
+import { formatApiError } from '@/shared/lib/format-api-error';
 import { Button } from '@/shared/ui/button';
 
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
-  return 'Não foi possível concluir a operação.';
-}
-
-function formatRole(role: OrganizationMember['role']): string {
-  return role === 'OWNER' ? 'Dono' : 'Funcionário';
-}
+const roleLabel: Record<OrganizationMemberRole, string> = {
+  OWNER: 'Admin',
+  MEMBER: 'Funcionário',
+};
 
 export function MembersPage() {
   const { active } = useActiveOrganization();
-
   const isAdmin = active?.isOwner === true;
   const organizationId = active?.organizationId;
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('12345678');
+  const [role, setRole] = useState<OrganizationMemberRole>('MEMBER');
   const [feedback, setFeedback] = useState<string | null>(null);
 
   const membersQuery = useMembers(organizationId, isAdmin);
   const createMemberMutation = useCreateMember();
   const deleteMemberMutation = useDeleteMember(organizationId);
 
-  const members = (membersQuery.data ?? []) as OrganizationMember[];
+  const members = membersQuery.data ?? [];
 
   async function handleCreateMember(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -53,16 +47,18 @@ export function MembersPage() {
       await createMemberMutation.mutateAsync({
         organizationId,
         name: name.trim(),
-        email: email.trim(),
+        email: email.trim().toLowerCase(),
         password,
+        role,
       });
 
       setName('');
       setEmail('');
       setPassword('12345678');
+      setRole('MEMBER');
       setFeedback('Membro criado com sucesso.');
     } catch (error) {
-      setFeedback(getErrorMessage(error));
+      setFeedback(formatApiError(error));
     }
   }
 
@@ -78,7 +74,7 @@ export function MembersPage() {
       await deleteMemberMutation.mutateAsync(member.id);
       setFeedback('Membro removido com sucesso.');
     } catch (error) {
-      setFeedback(getErrorMessage(error));
+      setFeedback(formatApiError(error));
     }
   }
 
@@ -116,7 +112,7 @@ export function MembersPage() {
             </h1>
 
             <p className="mt-2 max-w-2xl text-sm text-zinc-500 dark:text-zinc-400">
-              Gerencie os funcionários que terão acesso ao CRM AI como membros da organização.
+              Gerencie as pessoas que terão acesso ao CRM AI nesta organização.
             </p>
           </div>
 
@@ -179,7 +175,7 @@ export function MembersPage() {
           {members.length > 0 ? (
             <div className="mt-6 overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
               <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
-                {members.map((member: OrganizationMember) => {
+                {members.map((member) => {
                   const isOwner = member.role === 'OWNER';
 
                   return (
@@ -201,7 +197,7 @@ export function MembersPage() {
                                 : 'border-zinc-200 bg-white text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400'
                             )}
                           >
-                            {formatRole(member.role)}
+                            {roleLabel[member.role]}
                           </span>
                         </div>
 
@@ -231,7 +227,7 @@ export function MembersPage() {
           <h2 className="text-lg font-semibold text-zinc-950 dark:text-zinc-100">Novo membro</h2>
 
           <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-            Crie uma conta de funcionário vinculada à organização atual.
+            Crie uma conta vinculada à organização atual.
           </p>
 
           <form className="mt-6 space-y-3" onSubmit={handleCreateMember}>
@@ -276,6 +272,23 @@ export function MembersPage() {
               />
             </div>
 
+            <div>
+              <label className="mb-1 block text-xs font-medium text-zinc-600 dark:text-zinc-300">
+                Perfil
+              </label>
+
+              <select
+                value={role}
+                onChange={(event) =>
+                  setRole(event.target.value === 'OWNER' ? 'OWNER' : 'MEMBER')
+                }
+                className="h-10 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none transition focus:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+              >
+                <option value="MEMBER">Funcionário</option>
+                <option value="OWNER">Admin</option>
+              </select>
+            </div>
+
             <Button
               type="submit"
               disabled={createMemberMutation.isPending}
@@ -286,8 +299,7 @@ export function MembersPage() {
           </form>
 
           <p className="mt-4 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
-            O funcionário poderá acessar o sistema pelo login normal usando o e-mail e a senha
-            temporária cadastrados aqui.
+            A pessoa poderá acessar pelo login normal usando o e-mail e a senha temporária.
           </p>
         </div>
       </section>

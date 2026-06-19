@@ -17,7 +17,6 @@ export function AppHeader() {
   const { data, isPending, isError } = useCurrentUser();
   const { active } = useActiveOrganization();
   const { t } = useLocale();
-
   const isAdmin = active?.isOwner === true;
   const roleLabel = active ? (isAdmin ? 'Admin' : 'Usuário') : '';
 
@@ -38,7 +37,7 @@ export function AppHeader() {
   let label: string;
 
   if (isPending) {
-    label = 'Carregando…';
+    label = 'Carregando...';
   } else if (isError) {
     label = 'Perfil indisponível';
   } else if (data) {
@@ -69,7 +68,6 @@ export function AppHeader() {
             <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-zinc-950 text-[11px] font-bold tracking-normal text-white shadow-sm transition-transform duration-200 group-hover:scale-105 dark:bg-zinc-100 dark:text-zinc-950">
               AI
             </span>
-
             <span>CRM AI</span>
           </NavLink>
 

@@ -1,9 +1,16 @@
-import type { OrganizationMember } from '@/entities/member/types';
+import type { OrganizationMember, OrganizationMemberRole } from '@/entities/member/types';
 import { apiRequest } from '@/shared/api/client';
+
+export type CreateMemberInput = {
+  organizationId: string;
+  name: string;
+  email: string;
+  password: string;
+  role: OrganizationMemberRole;
+};
 
 export async function fetchMembers(organizationId: string): Promise<OrganizationMember[]> {
   const params = new URLSearchParams();
-
   params.set('organizationId', organizationId);
 
   return apiRequest<OrganizationMember[]>(`/api/v1/members?${params.toString()}`, {
@@ -11,12 +18,7 @@ export async function fetchMembers(organizationId: string): Promise<Organization
   });
 }
 
-export async function createMember(input: {
-  organizationId: string;
-  name: string;
-  email: string;
-  password: string;
-}): Promise<OrganizationMember> {
+export async function createMember(input: CreateMemberInput): Promise<OrganizationMember> {
   return apiRequest<OrganizationMember>('/api/v1/members', {
     method: 'POST',
     body: JSON.stringify(input),

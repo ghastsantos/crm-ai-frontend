@@ -1,5 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createMember, deleteMember, fetchMembers } from '@/features/members/api/members-api';
+import {
+  createMember,
+  deleteMember,
+  fetchMembers,
+  type CreateMemberInput,
+} from '@/features/members/api/members-api';
 
 export function useMembers(organizationId: string | undefined, enabled = true) {
   return useQuery({
@@ -13,15 +18,10 @@ export function useCreateMember() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: createMember,
+    mutationFn: (input: CreateMemberInput) => createMember(input),
     onSuccess: (member) => {
-      queryClient.invalidateQueries({
-        queryKey: ['members', member.organizationId],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ['me'],
-      });
+      void queryClient.invalidateQueries({ queryKey: ['members', member.organizationId] });
+      void queryClient.invalidateQueries({ queryKey: ['me'] });
     },
   });
 }
@@ -30,15 +30,10 @@ export function useDeleteMember(organizationId: string | undefined) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: deleteMember,
+    mutationFn: (memberId: string) => deleteMember(memberId),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['members', organizationId],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ['me'],
-      });
+      void queryClient.invalidateQueries({ queryKey: ['members', organizationId] });
+      void queryClient.invalidateQueries({ queryKey: ['me'] });
     },
   });
 }

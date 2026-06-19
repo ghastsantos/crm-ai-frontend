@@ -11,7 +11,6 @@ type AuthLayoutProps = {
 export function AuthLayout({ title, description, children, footer, visual }: AuthLayoutProps) {
   useEffect(() => {
     const root = document.documentElement;
-
     const previousLang = root.lang;
     const hadDarkClass = root.classList.contains('dark');
     const previousTheme = root.dataset.theme;
@@ -22,10 +21,7 @@ export function AuthLayout({ title, description, children, footer, visual }: Aut
 
     return () => {
       root.lang = previousLang;
-
-      if (hadDarkClass) {
-        root.classList.add('dark');
-      }
+      root.classList.toggle('dark', hadDarkClass);
 
       if (previousTheme) {
         root.dataset.theme = previousTheme;

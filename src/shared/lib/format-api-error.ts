@@ -17,6 +17,11 @@ const CODE_MESSAGES: Record<string, string> = {
   INVALID_CURRENT_PASSWORD: 'Senha atual incorreta.',
   PASSWORD_UNCHANGED: 'A nova senha precisa ser diferente da atual.',
   ORGANIZATION_NOT_FOUND: 'Organização não encontrada.',
+  MEMBER_NOT_FOUND: 'Membro não encontrado.',
+  OWNER_CANNOT_REMOVE_SELF: 'O administrador não pode remover a si mesmo.',
+  OWNER_CANNOT_BE_REMOVED: 'Um administrador não pode ser removido por aqui.',
+  PIPELINE_COLUMN_LIMIT_REACHED: 'O pipeline deve ter no máximo 6 etapas.',
+  PIPELINE_COLUMN_MINIMUM_REACHED: 'O pipeline deve manter pelo menos 5 etapas.',
 };
 
 export function formatApiError(err: unknown): string {

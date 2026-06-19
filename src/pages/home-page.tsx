@@ -11,6 +11,7 @@ import {
   useUpdatePipelineColumn,
 } from '@/features/pipeline-columns/hooks/use-pipeline-columns';
 import { useActiveOrganization } from '@/features/organizations/hooks/use-active-organization';
+import { WhatsAppPanel } from '@/features/whatsapp/ui/whatsapp-panel';
 
 export function HomePage() {
   const { t } = useLocale();
@@ -63,6 +64,16 @@ export function HomePage() {
             {t('home.indicators')}
           </h2>
           <PipelineKPIsBoard kpis={kpis} />
+        </section>
+      ) : null}
+
+      {organizationId && active ? (
+        <section>
+          <WhatsAppPanel
+            organizationId={organizationId}
+            organizationName={active.organizationName}
+            isOwner={active.isOwner}
+          />
         </section>
       ) : null}
 

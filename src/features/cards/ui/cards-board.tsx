@@ -50,9 +50,14 @@ type CreateModalState = {
   columnTitle: string | null;
 };
 
+const MIN_PIPELINE_COLUMNS = 5;
+const MAX_PIPELINE_COLUMNS = 6;
+
 export function CardsBoard({ columns, cards, organizationId, columnActions }: CardsBoardProps) {
   const { t } = useLocale();
   const sortedColumns = [...columns].sort((a, b) => a.position - b.position);
+  const canAddColumn = sortedColumns.length < MAX_PIPELINE_COLUMNS;
+  const canDeleteColumn = sortedColumns.length > MIN_PIPELINE_COLUMNS;
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [createModal, setCreateModal] = useState<CreateModalState>({
     open: false,
@@ -91,6 +96,10 @@ export function CardsBoard({ columns, cards, organizationId, columnActions }: Ca
   async function handleDeleteColumn(column: PipelineColumn) {
     setMenuOpenId(null);
     setColumnActionError(null);
+    if (!canDeleteColumn) {
+      setColumnActionError(t('board.column_minimum_hint'));
+      return;
+    }
     const inCol = cardsInColumn(column.id);
     try {
       if (inCol.length === 0) {
@@ -139,6 +148,10 @@ export function CardsBoard({ columns, cards, organizationId, columnActions }: Ca
   async function submitAddColumn() {
     if (!addColumnTitle.trim()) return;
     setColumnActionError(null);
+    if (!canAddColumn) {
+      setColumnActionError(t('board.column_limit_hint'));
+      return;
+    }
     try {
       await columnActions.onAddColumn(addColumnTitle.trim());
       setAddColumnTitle('');
@@ -227,7 +240,12 @@ export function CardsBoard({ columns, cards, organizationId, columnActions }: Ca
             type="button"
             variant="ghost"
             className="h-8 shrink-0 text-xs"
+            disabled={!canAddColumn}
             onClick={() => {
+              if (!canAddColumn) {
+                setColumnActionError(t('board.column_limit_hint'));
+                return;
+              }
               setColumnActionError(null);
               setAddColumnOpen(true);
             }}
@@ -235,6 +253,11 @@ export function CardsBoard({ columns, cards, organizationId, columnActions }: Ca
             {t('board.add_column')}
           </Button>
         </div>
+        {!canAddColumn ? (
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            {t('board.column_limit_hint')}
+          </p>
+        ) : null}
 
         <div className={cn('-mx-1 pb-2', fitColumns ? 'overflow-x-visible' : 'overflow-x-auto')}>
           <div
@@ -270,6 +293,7 @@ export function CardsBoard({ columns, cards, organizationId, columnActions }: Ca
                   onMoveRight={() => void handleMoveColumn(col, 'right')}
                   canMoveLeft={idx > 0}
                   canMoveRight={idx < sortedColumns.length - 1}
+                  canDelete={canDeleteColumn}
                 />
               );
             })}
@@ -385,6 +409,7 @@ type BoardColumnProps = {
   onMoveRight: () => void;
   canMoveLeft: boolean;
   canMoveRight: boolean;
+  canDelete: boolean;
 };
 
 function BoardColumn({
@@ -400,6 +425,7 @@ function BoardColumn({
   onMoveRight,
   canMoveLeft,
   canMoveRight,
+  canDelete,
 }: BoardColumnProps) {
   const { t } = useLocale();
   const { setNodeRef, isOver } = useDroppable({
@@ -481,7 +507,12 @@ function BoardColumn({
             </button>
             <button
               type="button"
-              className="block w-full px-3 py-2 text-left text-xs text-red-700 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-950/40"
+              disabled={!canDelete}
+              className={cn(
+                'block w-full px-3 py-2 text-left text-xs text-red-700 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-950/40',
+                !canDelete &&
+                  'cursor-not-allowed text-zinc-400 hover:bg-transparent dark:text-zinc-600 dark:hover:bg-transparent'
+              )}
               onClick={onDelete}
             >
               {t('board.delete_column')}
