@@ -41,6 +41,13 @@ export async function fetchCards(params: ListCardsParams): Promise<Card[]> {
   return raw.map(toCard);
 }
 
+export async function fetchCard(cardId: string): Promise<Card> {
+  const raw = await apiRequest<RawCard>(`/api/v1/cards/${cardId}`, {
+    method: 'GET',
+  });
+  return toCard(raw);
+}
+
 export async function createCard(input: CreateCardInput): Promise<Card> {
   const body = buildCreateBody(input);
   const raw = await apiRequest<RawCard>('/api/v1/cards', {

@@ -6,6 +6,7 @@ import {
   fetchOrganizations,
   updateOrganization,
   type CreateOrganizationUserInput,
+  type UpdateOrganizationInput,
 } from '../api/organizations-api';
 
 export function useOrganizations(enabled = true) {
@@ -31,6 +32,18 @@ export function useRenameOrganization() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, name }: { id: string; name: string }) => updateOrganization(id, { name }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['organizations'] });
+      void queryClient.invalidateQueries({ queryKey: ['me'] });
+    },
+  });
+}
+
+export function useUpdateOrganization() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: UpdateOrganizationInput }) =>
+      updateOrganization(id, body),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['organizations'] });
       void queryClient.invalidateQueries({ queryKey: ['me'] });

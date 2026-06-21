@@ -69,8 +69,12 @@ type RawWhatsAppMessageResult = Omit<WhatsAppMessageResult, 'card'> & {
   card: RawCard;
 };
 
-export async function fetchWhatsAppIntegration(): Promise<WhatsAppIntegration> {
-  return apiRequest<WhatsAppIntegration>('/api/v1/whatsapp/integration');
+export async function fetchWhatsAppIntegration(
+  organizationId: string
+): Promise<WhatsAppIntegration> {
+  return apiRequest<WhatsAppIntegration>(
+    `/api/v1/whatsapp/integration?organizationId=${encodeURIComponent(organizationId)}`
+  );
 }
 
 export async function setupWhatsAppIntegration(
@@ -82,9 +86,21 @@ export async function setupWhatsAppIntegration(
   });
 }
 
-export async function connectWhatsAppIntegration(): Promise<WhatsAppIntegration> {
+export async function connectWhatsAppIntegration(
+  organizationId: string
+): Promise<WhatsAppIntegration> {
   return apiRequest<WhatsAppIntegration>('/api/v1/whatsapp/integration/connect', {
     method: 'POST',
+    body: JSON.stringify({ organizationId }),
+  });
+}
+
+export async function disconnectWhatsAppIntegration(
+  organizationId: string
+): Promise<WhatsAppIntegration> {
+  return apiRequest<WhatsAppIntegration>('/api/v1/whatsapp/integration/disconnect', {
+    method: 'POST',
+    body: JSON.stringify({ organizationId }),
   });
 }
 

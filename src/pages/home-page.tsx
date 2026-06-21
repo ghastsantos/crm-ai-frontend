@@ -4,12 +4,7 @@ import { usePipelineKPIs } from '@/features/cards/hooks/use-pipeline-kpis';
 import { CardsBoard } from '@/features/cards/ui/cards-board';
 import { PipelineKPIsBoard } from '@/features/cards/ui/pipeline-kpis';
 import { useLocale } from '@/features/locale/hooks/use-locale';
-import {
-  useCreatePipelineColumn,
-  useDeletePipelineColumn,
-  usePipelineColumns,
-  useUpdatePipelineColumn,
-} from '@/features/pipeline-columns/hooks/use-pipeline-columns';
+import { usePipelineColumns } from '@/features/pipeline-columns/hooks/use-pipeline-columns';
 import { useActiveOrganization } from '@/features/organizations/hooks/use-active-organization';
 import { WhatsAppPanel } from '@/features/whatsapp/ui/whatsapp-panel';
 
@@ -20,9 +15,6 @@ export function HomePage() {
   const organizationId = active?.organizationId;
   const columnsQuery = usePipelineColumns(organizationId);
   const cardsQuery = useCards(organizationId);
-  const createCol = useCreatePipelineColumn();
-  const updateCol = useUpdatePipelineColumn();
-  const deleteCol = useDeletePipelineColumn();
 
   const cards = cardsQuery.data ?? [];
   const columns = columnsQuery.data ?? [];
@@ -93,37 +85,7 @@ export function HomePage() {
         ) : boardError ? (
           <p className="text-sm text-zinc-600 dark:text-zinc-300">{t('home.pipeline.error')}</p>
         ) : (
-          <CardsBoard
-            columns={columns}
-            cards={cards}
-            organizationId={organizationId}
-            columnActions={{
-              onRenameColumn: async (columnId, title) => {
-                await updateCol.mutateAsync({
-                  id: columnId,
-                  organizationId,
-                  body: { title },
-                });
-              },
-              onMoveColumn: async (columnId, position) => {
-                await updateCol.mutateAsync({
-                  id: columnId,
-                  organizationId,
-                  body: { position },
-                });
-              },
-              onDeleteColumn: async (columnId, moveToColumnId) => {
-                await deleteCol.mutateAsync({
-                  id: columnId,
-                  organizationId,
-                  moveToColumnId,
-                });
-              },
-              onAddColumn: async (title) => {
-                await createCol.mutateAsync({ organizationId, title });
-              },
-            }}
-          />
+          <CardsBoard columns={columns} cards={cards} organizationId={organizationId} />
         )}
       </section>
     </div>

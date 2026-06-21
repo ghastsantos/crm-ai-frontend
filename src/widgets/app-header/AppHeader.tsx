@@ -18,7 +18,7 @@ export function AppHeader() {
   const { active } = useActiveOrganization();
   const { t } = useLocale();
   const isAdmin = active?.isOwner === true;
-  const roleLabel = active ? (isAdmin ? 'Admin' : 'Usuário') : '';
+  const roleLabel = active ? (isAdmin ? t('app.role_admin') : t('app.role_user')) : '';
 
   async function handleLogout() {
     if (env.VITE_AUTH_HTTPONLY_COOKIE) {
@@ -37,9 +37,9 @@ export function AppHeader() {
   let label: string;
 
   if (isPending) {
-    label = 'Carregando...';
+    label = t('app.loading');
   } else if (isError) {
-    label = 'Perfil indisponível';
+    label = t('app.unavailable_profile');
   } else if (data) {
     label = data.name.trim() || data.email;
   } else {
@@ -52,8 +52,8 @@ export function AppHeader() {
         <div className="flex min-w-0 items-center gap-4">
           <NavLink
             to="/"
-            aria-label="Ir para o menu inicial"
-            title="Ir para o menu inicial"
+            aria-label={t('app.home')}
+            title={t('app.home')}
             className={({ isActive }) =>
               cn(
                 'group inline-flex h-10 items-center gap-3 rounded-xl border border-zinc-200 bg-white px-3 pr-4 text-sm font-semibold tracking-[0.16em] text-zinc-800 shadow-sm transition-all duration-200',
@@ -93,10 +93,10 @@ export function AppHeader() {
                       'border-zinc-200 bg-zinc-50 text-zinc-950 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100'
                   )
                 }
-                aria-label="Acessar membros da organização"
-                title="Acessar membros da organização"
+                aria-label={t('nav.members_aria')}
+                title={t('nav.members_aria')}
               >
-                Membros
+                {t('nav.members')}
               </NavLink>
 
               <NavLink
@@ -111,10 +111,10 @@ export function AppHeader() {
                       'border-zinc-200 bg-zinc-50 text-zinc-950 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100'
                   )
                 }
-                aria-label="Acessar logs do pipeline"
-                title="Acessar logs do pipeline"
+                aria-label={t('nav.logs_aria')}
+                title={t('nav.logs_aria')}
               >
-                Logs
+                {t('nav.logs')}
               </NavLink>
             </>
           ) : null}
