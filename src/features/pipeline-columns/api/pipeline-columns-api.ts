@@ -9,20 +9,6 @@ export async function fetchPipelineColumns(organizationId: string): Promise<Pipe
   });
 }
 
-export type CreatePipelineColumnInput = {
-  organizationId: string;
-  title: string;
-};
-
-export async function createPipelineColumn(
-  input: CreatePipelineColumnInput
-): Promise<PipelineColumn> {
-  return apiRequest<PipelineColumn>('/api/v1/pipeline-columns', {
-    method: 'POST',
-    body: JSON.stringify(input),
-  });
-}
-
 export type UpdatePipelineColumnInput = {
   title?: string;
   position?: number;

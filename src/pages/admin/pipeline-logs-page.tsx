@@ -1,4 +1,7 @@
 import { useMemo, useState } from 'react';
+import { getPipelineColumnNameLabel } from '@/entities/pipeline-column/labels';
+import { useLocale } from '@/features/locale/hooks/use-locale';
+import type { LocaleContextValue } from '@/features/locale/model/locale-context';
 import { useActiveOrganization } from '@/features/organizations/hooks/use-active-organization';
 import { usePipelineLogs } from '@/features/pipeline-logs/hooks/use-pipeline-logs';
 import type {
@@ -9,6 +12,8 @@ import { Card, CardDescription, CardTitle } from '@/shared/ui/card';
 import { Input } from '@/shared/ui/input';
 import { Button } from '@/shared/ui/button';
 import { Label } from '@/shared/ui/label';
+
+type Translate = LocaleContextValue['t'];
 
 type PipelineLogAction =
   | 'CARD_CREATED'
@@ -36,16 +41,16 @@ type PipelineLog = {
   description: string;
 };
 
-const actionLabels: Record<PipelineLogAction, string> = {
-  CARD_CREATED: 'Card criado',
-  CARD_MOVED: 'Card movido',
-  CARD_UPDATED: 'Card atualizado',
-  CARD_ARCHIVED: 'Card arquivado',
-  CARD_DELETED: 'Card excluído',
-  OWNER_CHANGED: 'Responsável alterado',
-  COLUMN_CREATED: 'Coluna criada',
-  COLUMN_UPDATED: 'Coluna atualizada',
-  COLUMN_DELETED: 'Coluna excluída',
+const actionLabelKeys: Record<PipelineLogAction, string> = {
+  CARD_CREATED: 'logs.actions.card_created',
+  CARD_MOVED: 'logs.actions.card_moved',
+  CARD_UPDATED: 'logs.actions.card_updated',
+  CARD_ARCHIVED: 'logs.actions.card_archived',
+  CARD_DELETED: 'logs.actions.card_deleted',
+  OWNER_CHANGED: 'logs.actions.owner_changed',
+  COLUMN_CREATED: 'logs.actions.column_created',
+  COLUMN_UPDATED: 'logs.actions.column_updated',
+  COLUMN_DELETED: 'logs.actions.column_deleted',
 };
 
 const actionStyles: Record<PipelineLogAction, string> = {
@@ -85,14 +90,18 @@ function mapApiAction(action: ApiPipelineLogAction): PipelineLogAction {
   return map[action];
 }
 
-function mapApiLog(log: ApiPipelineLog): PipelineLog {
+function actionLabel(action: PipelineLogAction, t: Translate): string {
+  return t(actionLabelKeys[action]);
+}
+
+function mapApiLog(log: ApiPipelineLog, t: Translate): PipelineLog {
   return {
     id: log.id,
     createdAt: log.createdAt,
-    userName: log.user?.name ?? 'Usuário não identificado',
-    userEmail: log.user?.email ?? 'Sem e-mail',
-    organizationName: log.organization?.name ?? 'Organização não identificada',
-    cardTitle: log.deal?.title ?? log.previousValue ?? 'Negociação não identificada',
+    userName: log.user?.name ?? 'CRM AI',
+    userEmail: log.user?.email ?? t('logs.actor.ai_email'),
+    organizationName: log.organization?.name ?? t('logs.unknown.organization'),
+    cardTitle: log.deal?.title ?? log.previousValue ?? t('logs.unknown.deal'),
     action: mapApiAction(log.action),
     fromColumn: log.fromColumnName ?? undefined,
     toColumn: log.toColumnName ?? undefined,
@@ -100,70 +109,77 @@ function mapApiLog(log: ApiPipelineLog): PipelineLog {
   };
 }
 
-function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat('pt-BR', {
+function formatDateTime(value: string, locale: string) {
+  return new Intl.DateTimeFormat(locale, {
     dateStyle: 'short',
     timeStyle: 'short',
   }).format(new Date(value));
 }
 
-function getActionDetails(log: PipelineLog) {
+function getActionDetails(log: PipelineLog, t: Translate) {
+  const fromColumn = getPipelineColumnNameLabel(log.fromColumn, t);
+  const toColumn = getPipelineColumnNameLabel(log.toColumn, t);
+
   if (log.action === 'CARD_MOVED') {
-    return `${log.fromColumn ?? 'Sem origem'} → ${log.toColumn ?? 'Sem destino'}`;
+    return t('logs.details.moved', {
+      from: fromColumn || t('logs.no_source'),
+      to: toColumn || t('logs.no_destination'),
+    });
   }
 
   if (log.action === 'OWNER_CHANGED') {
-    return `${log.previousOwner ?? 'Sem responsável'} → ${log.newOwner ?? 'Sem responsável'}`;
+    return t('logs.details.owner_changed', {
+      from: log.previousOwner ?? t('logs.no_owner'),
+      to: log.newOwner ?? t('logs.no_owner'),
+    });
   }
 
   if (log.action === 'CARD_CREATED') {
-    return `Criado em ${log.toColumn ?? 'Pipeline'}`;
+    return t('logs.details.created', { column: toColumn || t('logs.pipeline') });
   }
 
   if (log.action === 'CARD_ARCHIVED') {
-    return `Arquivado a partir de ${log.fromColumn ?? 'Pipeline'}`;
+    return t('logs.details.archived', { column: fromColumn || t('logs.pipeline') });
   }
 
   if (log.action === 'CARD_DELETED') {
-    return `Excluído a partir de ${log.fromColumn ?? 'Pipeline'}`;
+    return t('logs.details.deleted', { column: fromColumn || t('logs.pipeline') });
   }
 
   if (log.action === 'COLUMN_CREATED') {
-    return `Coluna criada: ${log.toColumn ?? 'Sem nome'}`;
+    return t('logs.details.column_created', { column: toColumn || t('logs.no_name') });
   }
 
   if (log.action === 'COLUMN_UPDATED') {
-    return 'Coluna atualizada';
+    return t('logs.details.column_updated');
   }
 
   if (log.action === 'COLUMN_DELETED') {
-    return `Coluna excluída: ${log.fromColumn ?? 'Sem nome'}`;
+    return t('logs.details.column_deleted', { column: fromColumn || t('logs.no_name') });
   }
 
   return log.description;
 }
 
-function exportLogsToCsv(logs: PipelineLog[]) {
+function exportLogsToCsv(logs: PipelineLog[], t: Translate, locale: string) {
   const headers = [
-    'Data e hora',
-    'Usuário',
-    'Email',
-    'Negociação',
-    'Ação',
-    'Detalhes',
-    'Organização',
-    'Descrição',
+    t('logs.table.date'),
+    t('logs.table.user'),
+    t('logs.table.email'),
+    t('logs.table.deal'),
+    t('logs.table.action'),
+    t('logs.table.details'),
+    t('logs.table.organization'),
   ];
 
   const rows = logs.map((log) => [
-    formatDateTime(log.createdAt),
+    formatDateTime(log.createdAt, locale),
     log.userName,
     log.userEmail,
     log.cardTitle,
-    actionLabels[log.action],
-    getActionDetails(log),
+    actionLabel(log.action, t),
+    getActionDetails(log, t),
     log.organizationName,
-    log.description,
   ]);
 
   const csvContent = [headers, ...rows]
@@ -178,7 +194,7 @@ function exportLogsToCsv(logs: PipelineLog[]) {
   const link = document.createElement('a');
 
   link.href = url;
-  link.download = `logs-pipeline-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.download = `pipeline-logs-${new Date().toISOString().slice(0, 10)}.csv`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -187,6 +203,7 @@ function exportLogsToCsv(logs: PipelineLog[]) {
 }
 
 export function PipelineLogsPage() {
+  const { t, locale } = useLocale();
   const { active } = useActiveOrganization();
   const organizationId = active?.organizationId;
 
@@ -199,8 +216,8 @@ export function PipelineLogsPage() {
   });
 
   const logs = useMemo(() => {
-    return (logsQuery.data ?? []).map(mapApiLog);
-  }, [logsQuery.data]);
+    return (logsQuery.data ?? []).map((log) => mapApiLog(log, t));
+  }, [logsQuery.data, t]);
 
   const filteredLogs = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -215,11 +232,12 @@ export function PipelineLogsPage() {
         log.cardTitle.toLowerCase().includes(normalizedSearch) ||
         log.organizationName.toLowerCase().includes(normalizedSearch) ||
         log.description.toLowerCase().includes(normalizedSearch) ||
-        actionLabels[log.action].toLowerCase().includes(normalizedSearch);
+        actionLabel(log.action, t).toLowerCase().includes(normalizedSearch) ||
+        getActionDetails(log, t).toLowerCase().includes(normalizedSearch);
 
       return matchesAction && matchesSearch;
     });
-  }, [logs, search, action]);
+  }, [logs, search, action, t]);
 
   const totalMovements = logs.filter((log) => log.action === 'CARD_MOVED').length;
   const totalCreated = logs.filter((log) => log.action === 'CARD_CREATED').length;
@@ -237,27 +255,26 @@ export function PipelineLogsPage() {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-xs font-medium uppercase tracking-widest text-emerald-500 dark:text-emerald-400">
-            Administração
+            {t('logs.section')}
           </p>
 
           <h1 className="mt-2 text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-            Histórico da Pipeline
+            {t('logs.title')}
           </h1>
 
           <p className="mt-1 max-w-2xl text-sm text-zinc-500 dark:text-zinc-400">
-            Acompanhe todas as movimentações realizadas nas negociações, incluindo criação, edição,
-            mudança de etapa, alteração de responsável, arquivamento e exclusão.
+            {t('logs.description')}
           </p>
 
           <p className="mt-2 text-xs text-zinc-400 dark:text-zinc-500">
-            Última atualização:{' '}
+            {t('logs.last_update')}{' '}
             {logsQuery.dataUpdatedAt
-              ? formatDateTime(new Date(logsQuery.dataUpdatedAt).toISOString())
-              : 'Ainda não atualizado'}
+              ? formatDateTime(new Date(logsQuery.dataUpdatedAt).toISOString(), locale)
+              : t('logs.not_updated')}
           </p>
 
           {logsQuery.isError ? (
-            <p className="mt-2 text-xs text-red-500 dark:text-red-300">Erro ao buscar logs.</p>
+            <p className="mt-2 text-xs text-red-500 dark:text-red-300">{t('logs.fetch_error')}</p>
           ) : null}
         </div>
 
@@ -267,15 +284,15 @@ export function PipelineLogsPage() {
             onClick={() => void logsQuery.refetch()}
             disabled={logsQuery.isFetching || !organizationId}
           >
-            {logsQuery.isFetching ? 'Atualizando...' : 'Atualizar logs'}
+            {logsQuery.isFetching ? t('logs.refreshing') : t('logs.refresh')}
           </Button>
 
           <Button
             variant="outline"
-            onClick={() => exportLogsToCsv(filteredLogs)}
+            onClick={() => exportLogsToCsv(filteredLogs, t, locale)}
             disabled={filteredLogs.length === 0}
           >
-            Exportar logs
+            {t('logs.export')}
           </Button>
         </div>
       </div>
@@ -283,74 +300,68 @@ export function PipelineLogsPage() {
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         <Card>
           <CardTitle>{logs.length}</CardTitle>
-          <CardDescription>Total de registros</CardDescription>
+          <CardDescription>{t('logs.stats.total')}</CardDescription>
         </Card>
 
         <Card>
           <CardTitle>{totalMovements}</CardTitle>
-          <CardDescription>Movimentações</CardDescription>
+          <CardDescription>{t('logs.stats.movements')}</CardDescription>
         </Card>
 
         <Card>
           <CardTitle>{totalCreated}</CardTitle>
-          <CardDescription>Cards criados</CardDescription>
+          <CardDescription>{t('logs.stats.created')}</CardDescription>
         </Card>
 
         <Card>
           <CardTitle>{totalUpdated}</CardTitle>
-          <CardDescription>Atualizações</CardDescription>
+          <CardDescription>{t('logs.stats.updated')}</CardDescription>
         </Card>
 
         <Card>
           <CardTitle>{totalArchived + totalDeleted}</CardTitle>
-          <CardDescription>Arquivados ou excluídos</CardDescription>
+          <CardDescription>{t('logs.stats.archived_deleted')}</CardDescription>
         </Card>
       </div>
 
       <Card className="space-y-5">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <CardTitle>Logs de negociações</CardTitle>
-            <CardDescription>
-              Registros ordenados pelas movimentações mais recentes da pipeline.
-            </CardDescription>
+            <CardTitle>{t('logs.list_title')}</CardTitle>
+            <CardDescription>{t('logs.list_description')}</CardDescription>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-[minmax(220px,340px)_190px_auto]">
             <div className="space-y-1.5">
-              <Label htmlFor="search">Buscar</Label>
+              <Label htmlFor="search">{t('logs.search.label')}</Label>
               <Input
                 id="search"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder="Usuário, lead, ação ou organização"
+                placeholder={t('logs.search.placeholder')}
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="action">Tipo de ação</Label>
+              <Label htmlFor="action">{t('logs.action_filter')}</Label>
               <select
                 id="action"
                 value={action}
                 onChange={(event) => setAction(event.target.value as 'ALL' | PipelineLogAction)}
                 className="flex h-9 w-full rounded-md border border-zinc-200 bg-white px-3 py-1 text-sm text-zinc-900 shadow-sm outline-none transition-colors focus-visible:border-zinc-400 focus-visible:ring-2 focus-visible:ring-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:focus-visible:border-zinc-600 dark:focus-visible:ring-zinc-700"
               >
-                <option value="ALL">Todas</option>
-                <option value="CARD_CREATED">Card criado</option>
-                <option value="CARD_MOVED">Card movido</option>
-                <option value="CARD_UPDATED">Card atualizado</option>
-                <option value="OWNER_CHANGED">Responsável alterado</option>
-                <option value="CARD_ARCHIVED">Card arquivado</option>
-                <option value="CARD_DELETED">Card excluído</option>
-                <option value="COLUMN_CREATED">Coluna criada</option>
-                <option value="COLUMN_UPDATED">Coluna atualizada</option>
-                <option value="COLUMN_DELETED">Coluna excluída</option>
+                <option value="ALL">{t('logs.actions.all')}</option>
+                {Object.keys(actionLabelKeys).map((option) => (
+                  <option key={option} value={option}>
+                    {actionLabel(option as PipelineLogAction, t)}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div className="flex items-end">
               <Button variant="ghost" onClick={handleClearFilters}>
-                Limpar filtros
+                {t('logs.clear_filters')}
               </Button>
             </div>
           </div>
@@ -359,24 +370,22 @@ export function PipelineLogsPage() {
         <div className="rounded-lg border border-zinc-200 dark:border-zinc-800">
           <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
             <p className="text-xs font-medium uppercase tracking-widest text-zinc-500 dark:text-zinc-500">
-              {filteredLogs.length} registro(s) encontrado(s)
+              {t('logs.results', { count: filteredLogs.length })}
             </p>
 
-            <p className="text-xs text-zinc-400 dark:text-zinc-500">
-              Exporta apenas os registros filtrados
-            </p>
+            <p className="text-xs text-zinc-400 dark:text-zinc-500">{t('logs.export_filtered')}</p>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full min-w-[980px] border-collapse text-left text-sm">
               <thead className="bg-zinc-50 text-xs uppercase tracking-widest text-zinc-500 dark:bg-zinc-950/60 dark:text-zinc-500">
                 <tr>
-                  <th className="px-4 py-3 font-medium">Data e hora</th>
-                  <th className="px-4 py-3 font-medium">Usuário</th>
-                  <th className="px-4 py-3 font-medium">Negociação</th>
-                  <th className="px-4 py-3 font-medium">Ação</th>
-                  <th className="px-4 py-3 font-medium">Detalhes</th>
-                  <th className="px-4 py-3 font-medium">Organização</th>
+                  <th className="px-4 py-3 font-medium">{t('logs.table.date')}</th>
+                  <th className="px-4 py-3 font-medium">{t('logs.table.user')}</th>
+                  <th className="px-4 py-3 font-medium">{t('logs.table.deal')}</th>
+                  <th className="px-4 py-3 font-medium">{t('logs.table.action')}</th>
+                  <th className="px-4 py-3 font-medium">{t('logs.table.details')}</th>
+                  <th className="px-4 py-3 font-medium">{t('logs.table.organization')}</th>
                 </tr>
               </thead>
 
@@ -387,7 +396,7 @@ export function PipelineLogsPage() {
                       colSpan={6}
                       className="bg-white px-4 py-12 text-center text-sm text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400"
                     >
-                      Carregando logs...
+                      {t('logs.loading')}
                     </td>
                   </tr>
                 ) : filteredLogs.length > 0 ? (
@@ -397,7 +406,7 @@ export function PipelineLogsPage() {
                       className="bg-white transition-colors hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-800/70"
                     >
                       <td className="whitespace-nowrap px-4 py-4 text-zinc-600 dark:text-zinc-300">
-                        {formatDateTime(log.createdAt)}
+                        {formatDateTime(log.createdAt, locale)}
                       </td>
 
                       <td className="px-4 py-4">
@@ -416,7 +425,7 @@ export function PipelineLogsPage() {
                         </div>
 
                         <div className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-500">
-                          {log.description}
+                          {actionLabel(log.action, t)}
                         </div>
                       </td>
 
@@ -424,12 +433,12 @@ export function PipelineLogsPage() {
                         <span
                           className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${actionStyles[log.action]}`}
                         >
-                          {actionLabels[log.action]}
+                          {actionLabel(log.action, t)}
                         </span>
                       </td>
 
                       <td className="px-4 py-4 text-zinc-600 dark:text-zinc-300">
-                        {getActionDetails(log)}
+                        {getActionDetails(log, t)}
                       </td>
 
                       <td className="px-4 py-4 text-zinc-600 dark:text-zinc-300">
@@ -443,7 +452,7 @@ export function PipelineLogsPage() {
                       colSpan={6}
                       className="bg-white px-4 py-12 text-center text-sm text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400"
                     >
-                      Nenhum log encontrado com os filtros selecionados.
+                      {t('logs.empty')}
                     </td>
                   </tr>
                 )}

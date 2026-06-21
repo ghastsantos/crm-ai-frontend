@@ -13,4 +13,16 @@ export type Card = {
   contactId: string | null;
   createdAt: string;
   updatedAt: string;
+  whatsappConversation?: {
+    id: string;
+    phone: string;
+    contactName: string | null;
+    messages: Array<{
+      id: string;
+      direction: 'INBOUND' | 'OUTBOUND';
+      status: 'RECEIVED' | 'SENT' | 'IGNORED' | 'FAILED';
+      text: string;
+      createdAt: string;
+    }>;
+  } | null;
 };

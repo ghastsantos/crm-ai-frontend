@@ -1,6 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Card } from '@/entities/card/types';
-import { createCard, deleteCard, fetchCards, moveCard, updateCard } from '../api/cards-api';
+import {
+  createCard,
+  deleteCard,
+  fetchCard,
+  fetchCards,
+  moveCard,
+  updateCard,
+} from '../api/cards-api';
 import type { CreateCardInput, MoveCardInput, UpdateCardInput } from '../api/cards-api';
 
 export function useCards(organizationId: string | undefined) {
@@ -8,6 +15,14 @@ export function useCards(organizationId: string | undefined) {
     queryKey: ['cards', organizationId],
     queryFn: () => fetchCards({ organizationId: organizationId as string }),
     enabled: Boolean(organizationId),
+  });
+}
+
+export function useCard(cardId: string | undefined) {
+  return useQuery({
+    queryKey: ['card', cardId],
+    queryFn: () => fetchCard(cardId as string),
+    enabled: Boolean(cardId),
   });
 }
 
@@ -31,8 +46,10 @@ export function useUpdateCard() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ cardId, body }: UpdateCardVariables) => updateCard(cardId, body),
-    onSuccess: (_data, variables) => {
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData(['card', variables.cardId], data);
       void queryClient.invalidateQueries({ queryKey: ['cards', variables.organizationId] });
+      void queryClient.invalidateQueries({ queryKey: ['card', variables.cardId] });
     },
   });
 }
@@ -48,6 +65,7 @@ export function useDeleteCard() {
     mutationFn: ({ cardId }: DeleteCardVariables) => deleteCard(cardId),
     onSuccess: (_data, variables) => {
       void queryClient.invalidateQueries({ queryKey: ['cards', variables.organizationId] });
+      queryClient.removeQueries({ queryKey: ['card', variables.cardId] });
     },
   });
 }
@@ -78,6 +96,7 @@ export function useMoveCard() {
     },
     onSettled: (_data, _err, variables) => {
       void queryClient.invalidateQueries({ queryKey: ['cards', variables.organizationId] });
+      void queryClient.invalidateQueries({ queryKey: ['card', variables.cardId] });
     },
   });
 }

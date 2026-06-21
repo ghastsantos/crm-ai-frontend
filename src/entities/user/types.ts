@@ -1,3 +1,5 @@
+import type { PixKeyType } from '@/entities/organization/types';
+
 export type PublicUser = {
   id: string;
   email: string;
@@ -12,6 +14,8 @@ export type MembershipSummary = {
   organizationId: string;
   organizationName: string;
   organizationNiche: string;
+  organizationPixKey: string | null;
+  organizationPixKeyType: PixKeyType | null;
 };
 
 export type UserWithMemberships = PublicUser & {

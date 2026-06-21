@@ -1,6 +1,7 @@
 import type { WhatsAppConnectionStatus, WhatsAppStage } from '@/features/whatsapp/api/whatsapp-api';
 import {
   useConnectWhatsAppIntegration,
+  useDisconnectWhatsAppIntegration,
   useSetupWhatsAppIntegration,
   useWhatsAppConversations,
   useWhatsAppIntegration,
@@ -36,22 +37,24 @@ function qrSource(value: string | null): string | null {
 }
 
 export function WhatsAppPanel({ organizationId, organizationName, isOwner }: WhatsAppPanelProps) {
-  const integrationQuery = useWhatsAppIntegration();
+  const integrationQuery = useWhatsAppIntegration(organizationId);
   const conversationsQuery = useWhatsAppConversations(organizationId);
   const setupMutation = useSetupWhatsAppIntegration();
   const connectMutation = useConnectWhatsAppIntegration();
+  const disconnectMutation = useDisconnectWhatsAppIntegration();
 
   const integration = integrationQuery.data;
-  const linkedToThisOrg = integration?.organizationId === organizationId;
-  const linkedToAnotherOrg = Boolean(integration?.organizationId && !linkedToThisOrg);
-  const connectedToThisOrg = linkedToThisOrg && integration?.status === 'CONNECTED';
-  const showSetupButton = isOwner && !linkedToThisOrg && !linkedToAnotherOrg;
-  const showConnectButton = isOwner && linkedToThisOrg && !connectedToThisOrg;
+  const hasIntegration = Boolean(integration?.id);
+  const connectedToThisOrg = hasIntegration && integration?.status === 'CONNECTED';
+  const showSetupButton = isOwner && !hasIntegration;
+  const showConnectButton = isOwner && hasIntegration && !connectedToThisOrg;
+  const showDisconnectButton = isOwner && connectedToThisOrg;
   const showQrBox = showConnectButton;
   const canSetup = showSetupButton && !setupMutation.isPending;
   const canConnect = showConnectButton && !connectMutation.isPending;
+  const canDisconnect = showDisconnectButton && !disconnectMutation.isPending;
   const qr = qrSource(integration?.qrCode ?? null);
-  const actionError = setupMutation.error ?? connectMutation.error;
+  const actionError = setupMutation.error ?? connectMutation.error ?? disconnectMutation.error;
 
   return (
     <Card className="space-y-4 border-emerald-200 bg-emerald-50/50 dark:border-emerald-900/60 dark:bg-emerald-950/20">
@@ -80,11 +83,11 @@ export function WhatsAppPanel({ organizationId, organizationName, isOwner }: Wha
       <div className={showQrBox ? 'grid gap-4 lg:grid-cols-[minmax(0,1fr)_240px]' : 'grid gap-4'}>
         <div className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2">
-            <Info label="Organização" value={integration?.organization?.name ?? 'Não vinculada'} />
+            <Info label="Organização" value={integration?.organization?.name ?? organizationName} />
             <Info label="Número" value={integration?.connectedPhone ?? 'Aguardando'} />
           </div>
 
-          {showSetupButton || showConnectButton ? (
+          {showSetupButton || showConnectButton || showDisconnectButton ? (
             <div className="flex flex-wrap gap-2">
               {showSetupButton ? (
                 <Button
@@ -100,9 +103,20 @@ export function WhatsAppPanel({ organizationId, organizationName, isOwner }: Wha
                   type="button"
                   variant="outline"
                   disabled={!canConnect}
-                  onClick={() => connectMutation.mutate()}
+                  onClick={() => connectMutation.mutate(organizationId)}
                 >
                   {connectMutation.isPending ? 'Gerando conexão...' : 'Gerar QR code'}
+                </Button>
+              ) : null}
+              {showDisconnectButton ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="border-red-200 text-red-700 hover:bg-red-50 dark:border-red-900/60 dark:text-red-300 dark:hover:bg-red-950/40"
+                  disabled={!canDisconnect}
+                  onClick={() => disconnectMutation.mutate(organizationId)}
+                >
+                  {disconnectMutation.isPending ? 'Desconectando...' : 'Desconectar WhatsApp'}
                 </Button>
               ) : null}
             </div>
@@ -111,10 +125,6 @@ export function WhatsAppPanel({ organizationId, organizationName, isOwner }: Wha
           {!isOwner ? (
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
               Apenas administradores podem conectar ou trocar o número do WhatsApp.
-            </p>
-          ) : linkedToAnotherOrg ? (
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Já existe um número de WhatsApp vinculado a outra organização.
             </p>
           ) : connectedToThisOrg ? (
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
