@@ -79,6 +79,24 @@ export function AppHeader() {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
+          <NavLink
+            to="/metrics"
+            className={({ isActive }) =>
+              cn(
+                'inline-flex h-9 items-center rounded-xl border border-transparent px-3 text-xs font-medium text-zinc-500 transition-all duration-200',
+                'hover:border-zinc-200 hover:bg-zinc-50 hover:text-zinc-950 hover:shadow-sm',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300',
+                'dark:text-zinc-400 dark:hover:border-zinc-800 dark:hover:bg-zinc-900 dark:hover:text-zinc-100 dark:focus-visible:ring-zinc-700',
+                isActive &&
+                  'border-zinc-200 bg-zinc-50 text-zinc-950 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100'
+              )
+            }
+            aria-label={t('nav.metrics_aria')}
+            title={t('nav.metrics_aria')}
+          >
+            {t('nav.metrics')}
+          </NavLink>
+
           {isAdmin ? (
             <>
               <NavLink

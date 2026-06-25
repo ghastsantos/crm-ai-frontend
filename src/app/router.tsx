@@ -3,6 +3,7 @@ import { AuthSessionSync } from '@/features/auth/ui/auth-session-sync';
 import { useSessionActive } from '@/features/auth/hooks/use-session-active';
 import { HomePage } from '@/pages/home-page';
 import { LoginPage } from '@/pages/login-page';
+import { MetricsPage } from '@/pages/metrics-page';
 import { RegisterPage } from '@/pages/register-page';
 import { SettingsPage } from '@/pages/settings-page';
 import { MembersPage } from '@/pages/admin/members-page';
@@ -49,6 +50,7 @@ export function AppRouter() {
         <Route element={<RequireAuth />}>
           <Route element={<AppShell />}>
             <Route path="/" element={<HomePage />} />
+            <Route path="/metrics" element={<MetricsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/admin/members" element={<MembersPage />} />
             <Route path="/admin/pipeline-logs" element={<PipelineLogsPage />} />
