@@ -1,3 +1,4 @@
+import { getPipelineColumnNameLabel } from '@/entities/pipeline-column/labels';
 import { formatCurrency } from '@/features/cards/lib/format-currency';
 import { useLocale } from '@/features/locale/hooks/use-locale';
 import { Card, CardDescription, CardTitle } from '@/shared/ui/card';
@@ -6,13 +7,6 @@ import type { MetricsOverview } from '../api/metrics-api';
 type Props = {
   stages: MetricsOverview['pipeline']['byStage'];
 };
-
-function getPipelineColumnNameLabel(
-  title: string,
-  _t: (key: string, vars?: Record<string, string | number>) => string
-) {
-  return title;
-}
 
 export function PipelineStageChart({ stages }: Props) {
   const { t } = useLocale();
