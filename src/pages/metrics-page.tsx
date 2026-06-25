@@ -9,7 +9,7 @@ import type { MetricsRangeDays } from '@/features/metrics/api/metrics-api';
 import { useLocale } from '@/features/locale/hooks/use-locale';
 import { useActiveOrganization } from '@/features/organizations/hooks/use-active-organization';
 import { Button } from '@/shared/ui/button';
-import { Card, CardDescription, CardTitle } from '@/shared/ui/card';
+import { Card } from '@/shared/ui/card';
 
 const rangeOptions: MetricsRangeDays[] = [7, 14, 30, 90];
 
@@ -112,12 +112,8 @@ function LoadingState() {
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {Array.from({ length: 4 }, (_, index) => (
         <Card key={index} className="min-h-[124px] animate-pulse">
-          <CardDescription className="mt-0 h-3 w-24 rounded bg-zinc-100 text-transparent dark:bg-zinc-800">
-            loading
-          </CardDescription>
-          <CardTitle className="mt-4 h-7 w-20 rounded bg-zinc-100 text-transparent dark:bg-zinc-800">
-            loading
-          </CardTitle>
+          <div aria-hidden="true" className="mt-0 h-3 w-24 rounded bg-zinc-100 dark:bg-zinc-800" />
+          <div aria-hidden="true" className="mt-4 h-7 w-20 rounded bg-zinc-100 dark:bg-zinc-800" />
         </Card>
       ))}
     </div>
