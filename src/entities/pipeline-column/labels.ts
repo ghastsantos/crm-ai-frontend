@@ -1,54 +1,33 @@
-import type { LocaleContextValue } from '@/features/locale/model/locale-context';
-import type { PipelineColumn } from './types';
+type Translate = (key: string, vars?: Record<string, string | number>) => string;
 
-type Translate = LocaleContextValue['t'];
+const stageKeyByTitle = new Map<string, string>([
+  ['lead', 'pipeline.stage.lead'],
+  ['lead captado', 'pipeline.stage.lead'],
+  ['qualificacao', 'pipeline.stage.qualification'],
+  ['qualificacao (mql/icp)', 'pipeline.stage.qualification'],
+  ['contato inicial', 'pipeline.stage.initial_contact'],
+  ['proposta', 'pipeline.stage.proposal'],
+  ['em negociacao', 'pipeline.stage.negotiation'],
+  ['negociacao', 'pipeline.stage.negotiation'],
+  ['fechamento', 'pipeline.stage.closing'],
+  ['nao fechou', 'pipeline.stage.lost'],
+]);
 
-const stages = [
-  {
-    position: 0,
-    key: 'pipeline.stage.lead',
-    terms: ['lead'],
-  },
-  {
-    position: 1,
-    key: 'pipeline.stage.qualification',
-    terms: ['qualificacao', 'qualification'],
-  },
-  {
-    position: 2,
-    key: 'pipeline.stage.negotiation',
-    terms: ['em negociacao', 'negotiation', 'in negotiation'],
-  },
-  {
-    position: 3,
-    key: 'pipeline.stage.closing',
-    terms: ['fechamento', 'closing', 'closed', 'won'],
-  },
-  {
-    position: 4,
-    key: 'pipeline.stage.lost',
-    terms: ['nao fechou', 'lost', 'not closed'],
-  },
-] as const;
-
-function normalize(value: string): string {
-  return value
+function normalizeTitle(title: string): string {
+  return title
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
-    .trim();
+    .trim()
+    .replace(/\s+/g, ' ');
 }
 
-export function getPipelineColumnLabel(column: PipelineColumn, t: Translate): string {
-  const stage = stages.find((item) => item.position === column.position);
-  return stage ? t(stage.key) : column.title;
-}
+export function getPipelineColumnNameLabel(title: string | null | undefined, t: Translate): string {
+  if (!title) return '';
 
-export function getPipelineColumnNameLabel(name: string | null | undefined, t: Translate): string {
-  if (!name) return '';
+  const normalized = normalizeTitle(title);
+  if (!normalized) return '';
 
-  const normalized = normalize(name);
-  const stage = stages.find((item) => item.terms.some((term) => normalized.includes(term)));
-
-  return stage ? t(stage.key) : name;
+  const stageKey = stageKeyByTitle.get(normalized);
+  return stageKey ? t(stageKey) : title;
 }
