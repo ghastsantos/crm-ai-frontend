@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
+import type { PixKeyType } from '@/entities/organization/types';
 import { useChangePassword, useUpdateProfile } from '@/features/account/hooks/use-account';
 import { useCurrentUser } from '@/features/auth/hooks/use-current-user';
 import { useCards } from '@/features/cards/hooks/use-cards';
@@ -9,6 +10,7 @@ import { useActiveOrganization } from '@/features/organizations/hooks/use-active
 import { CreateOrganizationModal } from '@/features/organizations/ui/create-organization-modal';
 import { DeleteOrganizationModal } from '@/features/organizations/ui/delete-organization-modal';
 import { RenameOrganizationModal } from '@/features/organizations/ui/rename-organization-modal';
+import { useUpdateOrganization } from '@/features/organizations/hooks/use-organizations';
 import { usePipelineColumns } from '@/features/pipeline-columns/hooks/use-pipeline-columns';
 import { ProductsSettingsPanel } from '@/features/products/ui/products-settings-panel';
 import { useTheme } from '@/features/theme/hooks/use-theme';
@@ -19,6 +21,14 @@ import { Button } from '@/shared/ui/button';
 import { Card } from '@/shared/ui/card';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
+
+const PIX_KEY_TYPE_OPTIONS: Array<{ value: PixKeyType; label: string }> = [
+  { value: 'CPF', label: 'settings.pix.type_cpf' },
+  { value: 'CNPJ', label: 'settings.pix.type_cnpj' },
+  { value: 'PHONE', label: 'settings.pix.type_phone' },
+  { value: 'EMAIL', label: 'settings.pix.type_email' },
+  { value: 'RANDOM', label: 'settings.pix.type_random' },
+];
 
 export function SettingsPage() {
   const { t } = useLocale();
@@ -49,6 +59,7 @@ export function SettingsPage() {
         <ProfileSection />
         <SecuritySection />
         <WorkspaceSection />
+        <PixSection />
         <ProductsSection />
         <DangerZoneSection />
       </div>
@@ -422,6 +433,124 @@ function ProductsSection() {
       organizationId={active?.organizationId}
       isOwner={Boolean(active?.isOwner)}
     />
+  );
+}
+
+function PixSection() {
+  const { t } = useLocale();
+  const { active } = useActiveOrganization();
+
+  return (
+    <Card className="space-y-4">
+      <SectionHeader title={t('settings.pix.title')} description={t('settings.pix.description')} />
+      {active ? (
+        <PixForm
+          key={`${active.organizationId}:${active.organizationPixKey ?? ''}:${active.organizationPixKeyType ?? ''}`}
+          organizationId={active.organizationId}
+          initialPixKey={active.organizationPixKey ?? ''}
+          initialPixKeyType={active.organizationPixKeyType ?? 'CPF'}
+          isOwner={active.isOwner}
+        />
+      ) : (
+        <p className="text-xs text-zinc-500 dark:text-zinc-400">{t('settings.workspace.no_org')}</p>
+      )}
+    </Card>
+  );
+}
+
+function PixForm({
+  organizationId,
+  initialPixKey,
+  initialPixKeyType,
+  isOwner,
+}: {
+  organizationId: string;
+  initialPixKey: string;
+  initialPixKeyType: PixKeyType;
+  isOwner: boolean;
+}) {
+  const { t } = useLocale();
+  const [pixKey, setPixKey] = useState(initialPixKey);
+  const [pixKeyType, setPixKeyType] = useState<PixKeyType>(initialPixKeyType);
+  const [error, setError] = useState<string | null>(null);
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+  const mutation = useUpdateOrganization();
+
+  function handleSubmit(event: FormEvent) {
+    event.preventDefault();
+    if (!isOwner) return;
+
+    const cleanPixKey = pixKey.trim();
+    setError(null);
+    mutation.mutate(
+      {
+        id: organizationId,
+        body: {
+          pixKey: cleanPixKey.length > 0 ? cleanPixKey : null,
+          pixKeyType: cleanPixKey.length > 0 ? pixKeyType : null,
+        },
+      },
+      {
+        onSuccess: () => setSavedAt(Date.now()),
+        onError: (err: unknown) => setError(formatApiError(err)),
+      }
+    );
+  }
+
+  const showSaved = savedAt !== null && !mutation.isPending && !error;
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-3">
+      <div className="grid gap-3 sm:grid-cols-[160px_minmax(0,1fr)]">
+        <div className="space-y-1.5">
+          <Label htmlFor="organization-pix-key-type">{t('settings.pix.type')}</Label>
+          <select
+            id="organization-pix-key-type"
+            value={pixKeyType}
+            onChange={(event) => {
+              setPixKeyType(event.target.value as PixKeyType);
+              setSavedAt(null);
+            }}
+            disabled={!isOwner}
+            className={cn(
+              'h-10 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900 shadow-sm transition-colors',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300',
+              'disabled:cursor-not-allowed disabled:bg-zinc-50 disabled:text-zinc-400',
+              'dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:focus-visible:ring-zinc-700 dark:disabled:bg-zinc-900'
+            )}
+          >
+            {PIX_KEY_TYPE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {t(option.label)}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="organization-pix-key">{t('settings.pix.field')}</Label>
+          <Input
+            id="organization-pix-key"
+            value={pixKey}
+            onChange={(event) => {
+              setPixKey(event.target.value);
+              setSavedAt(null);
+            }}
+            maxLength={200}
+            placeholder={t('settings.pix.placeholder')}
+            disabled={!isOwner}
+          />
+        </div>
+      </div>
+      {!isOwner ? (
+        <p className="text-xs text-zinc-500 dark:text-zinc-400">{t('settings.pix.only_owner')}</p>
+      ) : null}
+      <FormFooter
+        error={error}
+        successMessage={showSaved ? t('settings.pix.saved') : null}
+        submitLabel={mutation.isPending ? t('settings.pix.saving') : t('settings.pix.save')}
+        submitting={mutation.isPending || !isOwner}
+      />
+    </form>
   );
 }
 

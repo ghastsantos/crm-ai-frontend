@@ -1,10 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  createPipelineColumn,
   deletePipelineColumn,
   fetchPipelineColumns,
   updatePipelineColumn,
-  type CreatePipelineColumnInput,
   type UpdatePipelineColumnInput,
 } from '../api/pipeline-columns-api';
 
@@ -13,18 +11,6 @@ export function usePipelineColumns(organizationId: string | undefined) {
     queryKey: ['pipeline-columns', organizationId],
     queryFn: () => fetchPipelineColumns(organizationId as string),
     enabled: Boolean(organizationId),
-  });
-}
-
-export function useCreatePipelineColumn() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input: CreatePipelineColumnInput) => createPipelineColumn(input),
-    onSuccess: (_data, variables) => {
-      void queryClient.invalidateQueries({
-        queryKey: ['pipeline-columns', variables.organizationId],
-      });
-    },
   });
 }
 

@@ -1,4 +1,4 @@
-import type { Organization } from '@/entities/organization/types';
+import type { Organization, PixKeyType } from '@/entities/organization/types';
 import { apiRequest } from '@/shared/api/client';
 
 export type CreateOrganizationUserInput = {
@@ -6,6 +6,13 @@ export type CreateOrganizationUserInput = {
   password: string;
   name: string;
   role: 'OWNER' | 'MEMBER';
+};
+
+export type UpdateOrganizationInput = {
+  name?: string;
+  niche?: string;
+  pixKey?: string | null;
+  pixKeyType?: PixKeyType | null;
 };
 
 export type OrganizationUser = {
@@ -37,7 +44,7 @@ export async function createOrganization(body: {
 
 export async function updateOrganization(
   organizationId: string,
-  body: { name: string }
+  body: UpdateOrganizationInput
 ): Promise<Organization> {
   return apiRequest<Organization>(`/api/v1/organizations/${organizationId}`, {
     method: 'PATCH',

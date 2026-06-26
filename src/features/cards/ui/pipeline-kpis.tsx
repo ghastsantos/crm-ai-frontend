@@ -1,3 +1,4 @@
+import { getPipelineColumnNameLabel } from '@/entities/pipeline-column/labels';
 import { useLocale } from '@/features/locale/hooks/use-locale';
 import { formatCurrency } from '../lib/format-currency';
 import type { PipelineKPIs } from '../hooks/use-pipeline-kpis';
@@ -21,17 +22,16 @@ export function PipelineKPIsBoard({ kpis }: PipelineKPIsProps) {
       ? t('kpis.without_value', { count: kpis.cardsWithoutValue })
       : t('kpis.all_with_value');
 
+  const topStagesLabel =
+    kpis.topStages.length === 0
+      ? t('kpis.no_cards')
+      : kpis.topStages
+          .map((stage) => `${stage.count} ${getPipelineColumnNameLabel(stage.title, t)}`)
+          .join(' · ');
+
   return (
     <div className="grid gap-3 sm:grid-cols-3">
-      <KpiCard
-        label={t('kpis.cards')}
-        value={String(kpis.totalCards)}
-        sublabel={
-          kpis.topStages.length === 0
-            ? t('kpis.no_cards')
-            : kpis.topStages.map((s) => `${s.count} ${s.title}`).join(' · ')
-        }
-      />
+      <KpiCard label={t('kpis.cards')} value={String(kpis.totalCards)} sublabel={topStagesLabel} />
       <KpiCard
         label={t('kpis.value')}
         value={formatCurrency(kpis.totalValue || null)}
